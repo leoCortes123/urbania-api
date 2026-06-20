@@ -51,3 +51,9 @@ it('includes a valid trace_id in meta', function () {
     $traceId = $response->json('meta.trace_id');
     expect($traceId)->toBeString()->not->toBeEmpty();
 });
+
+it('includes security headers', function () {
+    $response = getJson('/api/v1/health');
+
+    expect($response->headers->get('Strict-Transport-Security'))->not->toBeEmpty();
+});
