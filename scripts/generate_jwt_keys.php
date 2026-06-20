@@ -11,6 +11,9 @@ if (! is_dir($dir) && ! mkdir($dir, 0755, true) && ! is_dir($dir)) {
 $configFile = $dir.'/openssl.cnf';
 file_put_contents($configFile, "[req]\ndistinguished_name = req_distinguished_name\n[req_distinguished_name]\n");
 
+$previousOpenSSLConf = getenv('OPENSSL_CONF');
+putenv('OPENSSL_CONF='.$configFile);
+
 $config = [
     'private_key_bits' => 4096,
     'private_key_type' => OPENSSL_KEYTYPE_RSA,
@@ -23,7 +26,15 @@ if ($privateKey === false) {
 }
 
 $privateExport = '';
-openssl_pkey_export($privateKey, $privateExport);
+if (! openssl_pkey_export($privateKey, $privateExport, null, $config)) {
+    throw new RuntimeException('Failed to export private key: '.openssl_error_string());
+}
+
+if ($previousOpenSSLConf !== false) {
+    putenv('OPENSSL_CONF='.$previousOpenSSLConf);
+} else {
+    putenv('OPENSSL_CONF');
+}
 
 $publicKey = openssl_pkey_get_details($privateKey);
 if ($publicKey === false) {
