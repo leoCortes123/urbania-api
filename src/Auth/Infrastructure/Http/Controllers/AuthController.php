@@ -12,14 +12,27 @@ use Urbania\Auth\Application\DTOs\LogoutRequestDto;
 use Urbania\Auth\Application\DTOs\RefreshTokenRequestDto;
 use Urbania\Auth\Application\DTOs\RegisterRequestDto;
 use Urbania\Auth\Application\DTOs\UserResponseDto;
+use Urbania\Auth\Application\Services\JwtServiceInterface;
 use Urbania\Auth\Application\UseCases\GetCurrentUserUseCase;
+use Urbania\Auth\Application\UseCases\ListSessionsUseCase;
 use Urbania\Auth\Application\UseCases\LoginUseCase;
 use Urbania\Auth\Application\UseCases\LogoutUseCase;
+use Urbania\Auth\Application\UseCases\MfaDisableUseCase;
+use Urbania\Auth\Application\UseCases\MfaEnableUseCase;
+use Urbania\Auth\Application\UseCases\MfaRegenerateBackupUseCase;
+use Urbania\Auth\Application\UseCases\MfaSetupUseCase;
+use Urbania\Auth\Application\UseCases\MfaVerifyBackupUseCase;
+use Urbania\Auth\Application\UseCases\MfaVerifyUseCase;
 use Urbania\Auth\Application\UseCases\RefreshTokenUseCase;
 use Urbania\Auth\Application\UseCases\RegisterUseCase;
+use Urbania\Auth\Application\UseCases\RevokeAllSessionsUseCase;
+use Urbania\Auth\Application\UseCases\RevokeSessionUseCase;
 use Urbania\Auth\Domain\Exceptions\TokenInvalidException;
 use Urbania\Auth\Infrastructure\Http\Requests\LoginRequest;
 use Urbania\Auth\Infrastructure\Http\Requests\LogoutRequest;
+use Urbania\Auth\Infrastructure\Http\Requests\MfaDisableRequest;
+use Urbania\Auth\Infrastructure\Http\Requests\MfaEnableRequest;
+use Urbania\Auth\Infrastructure\Http\Requests\MfaVerifyRequest;
 use Urbania\Auth\Infrastructure\Http\Requests\RefreshTokenRequest;
 use Urbania\Auth\Infrastructure\Http\Requests\RegisterRequest;
 use Urbania\Auth\Infrastructure\Http\Resources\TokenResource;
@@ -27,6 +40,10 @@ use Urbania\Auth\Infrastructure\Http\Resources\UserResource;
 
 final class AuthController extends Controller
 {
+    public function __construct(
+        private readonly JwtServiceInterface $jwtService,
+    ) {}
+
     public function login(LoginRequest $request, LoginUseCase $useCase): JsonResponse
     {
         /** @var string $email */
@@ -66,6 +83,11 @@ final class AuthController extends Controller
                     'code' => 'MFA_REQUIRED',
                     'message' => 'Se requiere verificación de autenticación multifactor',
                     'trace_id' => $request->attributes->get('trace_id'),
+                ],
+                'data' => [
+                    'limited_token' => $result->limitedToken,
+                    'token_type' => 'bearer',
+                    'expires_in' => 300,
                 ],
             ], 401);
         }
@@ -137,6 +159,16 @@ final class AuthController extends Controller
 
         $useCase->execute($dto);
 
+        $accessToken = $request->bearerToken();
+
+        if ($accessToken !== null && $accessToken !== '') {
+            $payload = $this->jwtService->decode($accessToken);
+
+            if (isset($payload['jti']) && is_string($payload['jti']) && $payload['jti'] !== '') {
+                $this->jwtService->revoke($payload['jti']);
+            }
+        }
+
         return response()->json(null, 204);
     }
 
@@ -177,5 +209,179 @@ final class AuthController extends Controller
             'data' => $resource->resolve($request),
             'meta' => ['trace_id' => $request->attributes->get('trace_id')],
         ], 200);
+    }
+
+    public function mfaSetup(Request $request, MfaSetupUseCase $useCase): JsonResponse
+    {
+        $userId = $request->attributes->get('auth_user_id');
+        assert(is_string($userId) && $userId !== '');
+
+        $result = $useCase->execute($userId);
+
+        return response()->json([
+            'data' => [
+                'secret' => $result->secret,
+                'qr_code_url' => $result->qrCodeUrl,
+                'backup_codes' => $result->backupCodes,
+            ],
+            'meta' => ['trace_id' => $request->attributes->get('trace_id')],
+        ], 200);
+    }
+
+    public function mfaVerify(MfaVerifyRequest $request, MfaVerifyUseCase $useCase): JsonResponse
+    {
+        /** @var string $mfaToken */
+        $mfaToken = $request->validated('mfa_token');
+        /** @var string $code */
+        $code = $request->validated('code');
+
+        $result = $useCase->execute(
+            mfaToken: $mfaToken,
+            code: $code,
+            userAgent: $request->userAgent() ?? '',
+            ipAddress: $request->ip() ?? '',
+        );
+
+        $resource = new TokenResource($result);
+
+        return response()->json([
+            'data' => $resource->resolve($request),
+            'meta' => ['trace_id' => $request->attributes->get('trace_id')],
+        ], 200);
+    }
+
+    public function mfaVerifyBackup(MfaVerifyRequest $request, MfaVerifyBackupUseCase $useCase): JsonResponse
+    {
+        /** @var string $mfaToken */
+        $mfaToken = $request->validated('mfa_token');
+        /** @var string $code */
+        $code = $request->validated('code');
+
+        $result = $useCase->execute(
+            mfaToken: $mfaToken,
+            code: $code,
+            userAgent: $request->userAgent() ?? '',
+            ipAddress: $request->ip() ?? '',
+        );
+
+        $resource = new TokenResource($result);
+
+        return response()->json([
+            'data' => $resource->resolve($request),
+            'meta' => ['trace_id' => $request->attributes->get('trace_id')],
+        ], 200);
+    }
+
+    public function mfaEnable(MfaEnableRequest $request, MfaEnableUseCase $useCase): JsonResponse
+    {
+        $userId = $request->attributes->get('auth_user_id');
+        assert(is_string($userId) && $userId !== '');
+
+        /** @var string $code */
+        $code = $request->validated('code');
+
+        $useCase->execute(
+            userId: $userId,
+            code: $code,
+            ipAddress: $request->ip() ?? '',
+        );
+
+        return response()->json([
+            'data' => ['message' => 'MFA habilitado exitosamente'],
+            'meta' => ['trace_id' => $request->attributes->get('trace_id')],
+        ], 200);
+    }
+
+    public function mfaDisable(MfaDisableRequest $request, MfaDisableUseCase $useCase): JsonResponse
+    {
+        $userId = $request->attributes->get('auth_user_id');
+        $currentSessionId = $request->attributes->get('auth_session_id');
+        assert(is_string($userId) && $userId !== '');
+        assert(is_string($currentSessionId) && $currentSessionId !== '');
+
+        /** @var string $password */
+        $password = $request->validated('password');
+        /** @var string $code */
+        $code = $request->validated('code');
+
+        $useCase->execute(
+            userId: $userId,
+            password: $password,
+            code: $code,
+            ipAddress: $request->ip() ?? '',
+            currentSessionId: $currentSessionId,
+        );
+
+        return response()->json([
+            'data' => ['message' => 'MFA deshabilitado exitosamente'],
+            'meta' => ['trace_id' => $request->attributes->get('trace_id')],
+        ], 200);
+    }
+
+    public function mfaRegenerateBackupCodes(Request $request, MfaRegenerateBackupUseCase $useCase): JsonResponse
+    {
+        $userId = $request->attributes->get('auth_user_id');
+        assert(is_string($userId) && $userId !== '');
+
+        $codes = $useCase->execute($userId);
+
+        return response()->json([
+            'data' => ['backup_codes' => $codes],
+            'meta' => ['trace_id' => $request->attributes->get('trace_id')],
+        ], 200);
+    }
+
+    public function listSessions(Request $request, ListSessionsUseCase $useCase): JsonResponse
+    {
+        $userId = $request->attributes->get('auth_user_id');
+        $currentSessionId = $request->attributes->get('auth_session_id');
+        assert(is_string($userId) && $userId !== '');
+        assert(is_string($currentSessionId) && $currentSessionId !== '');
+
+        $sessions = $useCase->execute(
+            userId: $userId,
+            currentSessionId: $currentSessionId,
+        );
+
+        return response()->json([
+            'data' => ['sessions' => array_map(fn ($dto) => [
+                'session_id' => $dto->sessionId,
+                'device_name' => $dto->deviceName,
+                'device_fingerprint' => $dto->deviceFingerprint,
+                'ip_address' => $dto->ipAddress,
+                'last_used_at' => $dto->lastUsedAt,
+                'created_at' => $dto->createdAt,
+                'is_current' => $dto->isCurrent,
+            ], $sessions)],
+            'meta' => ['trace_id' => $request->attributes->get('trace_id')],
+        ], 200);
+    }
+
+    public function revokeAllSessions(Request $request, RevokeAllSessionsUseCase $useCase): JsonResponse
+    {
+        $userId = $request->attributes->get('auth_user_id');
+        $currentSessionId = $request->attributes->get('auth_session_id');
+        assert(is_string($userId) && $userId !== '');
+        assert(is_string($currentSessionId) && $currentSessionId !== '');
+
+        $useCase->execute(
+            userId: $userId,
+            currentSessionId: $currentSessionId,
+        );
+
+        return response()->json(null, 204);
+    }
+
+    public function revokeSession(string $sessionId, Request $request, RevokeSessionUseCase $useCase): JsonResponse
+    {
+        $userId = $request->attributes->get('auth_user_id');
+        assert(is_string($userId) && $userId !== '');
+
+        $useCase->execute(
+            userId: $userId,
+            sessionId: $sessionId,
+        );
+
+        return response()->json(null, 204);
     }
 }

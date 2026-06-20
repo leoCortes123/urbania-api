@@ -13,5 +13,17 @@ Route::middleware('api')->prefix('api/v1/auth')->group(function (): void {
     Route::middleware(['jwt.auth'])->group(function (): void {
         Route::post('/logout', [AuthController::class, 'logout'])->middleware('throttle:api');
         Route::get('/me', [AuthController::class, 'me'])->middleware('throttle:api');
+
+        Route::post('/mfa/setup', [AuthController::class, 'mfaSetup'])->middleware('throttle:api');
+        Route::post('/mfa/enable', [AuthController::class, 'mfaEnable'])->middleware('throttle:api');
+        Route::post('/mfa/disable', [AuthController::class, 'mfaDisable'])->middleware('throttle:api');
+        Route::post('/mfa/backup-codes', [AuthController::class, 'mfaRegenerateBackupCodes'])->middleware('throttle:api');
+
+        Route::get('/sessions', [AuthController::class, 'listSessions'])->middleware('throttle:api');
+        Route::delete('/sessions', [AuthController::class, 'revokeAllSessions'])->middleware('throttle:api');
+        Route::delete('/sessions/{sessionId}', [AuthController::class, 'revokeSession'])->middleware('throttle:api');
     });
+
+    Route::post('/mfa/verify', [AuthController::class, 'mfaVerify'])->middleware('throttle:mfa-verify');
+    Route::post('/mfa/verify-backup', [AuthController::class, 'mfaVerifyBackup'])->middleware('throttle:mfa-verify');
 });

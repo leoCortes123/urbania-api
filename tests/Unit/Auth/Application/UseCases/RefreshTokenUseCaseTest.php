@@ -11,6 +11,7 @@ use Urbania\Auth\Domain\Exceptions\DeviceNotRecognizedException;
 use Urbania\Auth\Domain\Exceptions\TokenExpiredException;
 use Urbania\Auth\Domain\Exceptions\TokenInvalidException;
 use Urbania\Auth\Domain\Repositories\RefreshTokenRepositoryInterface;
+use Urbania\Auth\Domain\Repositories\UserRepositoryInterface;
 use Urbania\Auth\Domain\ValueObjects\DeviceFingerprint;
 use Urbania\Auth\Domain\ValueObjects\JwtToken;
 use Urbania\Auth\Domain\ValueObjects\SessionId;
@@ -19,11 +20,17 @@ use Urbania\Shared\Domain\ValueObjects\Uuid;
 
 beforeEach(function (): void {
     $this->refreshTokenRepository = Mockery::mock(RefreshTokenRepositoryInterface::class);
+    $this->userRepository = Mockery::mock(UserRepositoryInterface::class);
     $this->jwtService = Mockery::mock(JwtServiceInterface::class);
     $this->eventBus = Mockery::mock(EventBusInterface::class);
 
+    $this->userRepository->shouldReceive('findById')
+        ->zeroOrMoreTimes()
+        ->andReturn(null);
+
     $this->useCase = new RefreshTokenUseCase(
         $this->refreshTokenRepository,
+        $this->userRepository,
         $this->jwtService,
         $this->eventBus,
     );
@@ -70,6 +77,10 @@ it('rotates refresh token successfully', function (): void {
     $this->jwtService->shouldReceive('generateRefreshToken')
         ->once()
         ->andReturn('new-raw-refresh-token');
+
+    $this->refreshTokenRepository->shouldReceive('revoke')
+        ->once()
+        ->with(hash('sha256', 'raw-refresh-token'), 'rotated');
 
     $this->refreshTokenRepository->shouldReceive('save')
         ->once()
@@ -147,6 +158,10 @@ it('throws DeviceNotRecognizedException when fingerprint does not match', functi
         ->once()
         ->andReturn($tokenEntity);
 
+    $this->eventBus->shouldReceive('dispatch')
+        ->once()
+        ->with(Mockery::type(SuspiciousActivityDetected::class));
+
     $this->useCase->execute($request);
 })->throws(DeviceNotRecognizedException::class);
 
@@ -200,6 +215,10 @@ it('sets previous token hash on rotated token', function (): void {
     $this->refreshTokenRepository->shouldReceive('findByHash')
         ->once()
         ->andReturn($tokenEntity);
+
+    $this->refreshTokenRepository->shouldReceive('revoke')
+        ->once()
+        ->with(hash('sha256', 'raw-refresh-token'), 'rotated');
 
     $this->jwtService->shouldReceive('generateRefreshToken')
         ->once()

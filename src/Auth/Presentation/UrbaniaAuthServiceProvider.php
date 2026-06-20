@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Urbania\Auth\Presentation;
 
 use Illuminate\Support\ServiceProvider;
+use PragmaRX\Google2FA\Google2FA;
 use Urbania\Auth\Application\Services\JwtServiceInterface;
 use Urbania\Auth\Domain\Repositories\RefreshTokenRepositoryInterface;
 use Urbania\Auth\Domain\Repositories\UserRepositoryInterface;
@@ -18,6 +19,13 @@ final class UrbaniaAuthServiceProvider extends ServiceProvider
 {
     public function register(): void
     {
+        $this->app->singleton(Google2FA::class, function (): Google2FA {
+            $google2fa = new Google2FA;
+            $google2fa->setAlgorithm('sha256');
+
+            return $google2fa;
+        });
+
         $this->app->bind(
             JwtServiceInterface::class,
             PhpOpenSourceSaverJwtService::class,

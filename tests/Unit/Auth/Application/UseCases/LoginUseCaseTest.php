@@ -9,7 +9,6 @@ use Urbania\Auth\Domain\Entities\RefreshTokenEntity;
 use Urbania\Auth\Domain\Entities\UserEntity;
 use Urbania\Auth\Domain\Events\UserLoggedIn;
 use Urbania\Auth\Domain\Exceptions\InvalidCredentialsException;
-use Urbania\Auth\Domain\Exceptions\MfaRequiredException;
 use Urbania\Auth\Domain\Exceptions\UserLockedException;
 use Urbania\Auth\Domain\Repositories\RefreshTokenRepositoryInterface;
 use Urbania\Auth\Domain\Repositories\UserRepositoryInterface;
@@ -190,21 +189,51 @@ it('returns FORCE_PASSWORD_CHANGE status with limited token', function (): void 
         ->and($response->expiresIn)->toBe(300);
 });
 
-it('throws MfaRequiredException when MFA is enabled', function (): void {
+it('returns MFA_REQUIRED status with limited token when MFA is enabled', function (): void {
     $user = createLoginUser();
     $user->enableMfa('secret', ['code1', 'code2']);
 
     $request = new LoginRequestDto(
         email: 'user@example.com',
         password: 'SecureP@ss123',
+        userAgent: 'Mozilla/5.0',
+        ipAddress: '192.168.1.1',
+        acceptLanguage: 'en-US',
+        deviceName: 'Test Device',
     );
 
     $this->userRepository->shouldReceive('findByEmail')
         ->once()
         ->andReturn($user);
 
-    $this->useCase->execute($request);
-})->throws(MfaRequiredException::class);
+    $expectedFingerprint = DeviceFingerprint::calculate(
+        userAgent: 'Mozilla/5.0',
+        ip: '192.168.1.1',
+        acceptLanguage: 'en-US',
+        deviceName: 'Test Device',
+    );
+
+    $this->jwtService->shouldReceive('generateAccessToken')
+        ->once()
+        ->with(
+            Mockery::on(fn (string $userId): bool => $userId === $user->id()->toString()),
+            'user',
+            false,
+            Mockery::type(SessionId::class),
+            $expectedFingerprint->toString(),
+            'mfa-verify',
+            300,
+        )
+        ->andReturn(JwtToken::fromString('mfa-token'));
+
+    $response = $this->useCase->execute($request);
+
+    expect($response->status)->toBe('MFA_REQUIRED')
+        ->and($response->limitedToken)->toBe('mfa-token')
+        ->and($response->accessToken)->toBe('')
+        ->and($response->refreshToken)->toBe('')
+        ->and($response->expiresIn)->toBe(300);
+});
 
 it('generates correct device fingerprint from metadata', function (): void {
     $user = createLoginUser();

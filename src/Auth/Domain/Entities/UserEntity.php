@@ -211,6 +211,45 @@ final class UserEntity
         $this->updatedAt = new \DateTimeImmutable;
     }
 
+    public function validateBackupCode(string $plainCode): bool
+    {
+        foreach ($this->mfaBackupCodes as $storedHash) {
+            if (password_verify($plainCode, $storedHash)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public function removeBackupCode(string $plainCode): void
+    {
+        foreach ($this->mfaBackupCodes as $index => $storedHash) {
+            if (password_verify($plainCode, $storedHash)) {
+                unset($this->mfaBackupCodes[$index]);
+                $this->mfaBackupCodes = array_values($this->mfaBackupCodes);
+                $this->updatedAt = new \DateTimeImmutable;
+
+                return;
+            }
+        }
+    }
+
+    public function setMfaSecret(string $secret): void
+    {
+        $this->mfaSecret = $secret;
+        $this->updatedAt = new \DateTimeImmutable;
+    }
+
+    /**
+     * @param  array<int, string>  $codes
+     */
+    public function setBackupCodes(array $codes): void
+    {
+        $this->mfaBackupCodes = $codes;
+        $this->updatedAt = new \DateTimeImmutable;
+    }
+
     public function id(): Uuid
     {
         return $this->id;

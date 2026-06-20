@@ -7,12 +7,13 @@
     "license": "MIT",
     "require": {
         "php": "^8.5",
+        "egulias/email-validator": "^4.0",
+        "knuckleswtf/scribe": "^5.10",
         "laravel/framework": "^13.0",
         "laravel/tinker": "^3.0",
         "php-open-source-saver/jwt-auth": "^2.9",
-        "ramsey/uuid": "^4.7",
-        "egulias/email-validator": "^4.0",
-        "knuckleswtf/scribe": "^5.10"
+        "pragmarx/google2fa-laravel": "*",
+        "ramsey/uuid": "^4.7"
     },
     "require-dev": {
         "fakerphp/faker": "^1.23",

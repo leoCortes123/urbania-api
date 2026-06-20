@@ -43,5 +43,9 @@ class AppServiceProvider extends ServiceProvider
 
             return Limit::perMinute(1000)->by((string) $key);
         });
+
+        RateLimiter::for('mfa-verify', function (Request $request): Limit {
+            return Limit::perMinutes(5, 3)->by($request->ip());
+        });
     }
 }

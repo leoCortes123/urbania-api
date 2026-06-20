@@ -12,7 +12,6 @@ use Urbania\Auth\Domain\Entities\RefreshTokenEntity;
 use Urbania\Auth\Domain\Entities\UserEntity;
 use Urbania\Auth\Domain\Events\UserLoggedIn;
 use Urbania\Auth\Domain\Exceptions\InvalidCredentialsException;
-use Urbania\Auth\Domain\Exceptions\MfaRequiredException;
 use Urbania\Auth\Domain\Exceptions\UserLockedException;
 use Urbania\Auth\Domain\Repositories\RefreshTokenRepositoryInterface;
 use Urbania\Auth\Domain\Repositories\UserRepositoryInterface;
@@ -73,7 +72,33 @@ final readonly class LoginUseCase
         }
 
         if ($user->isMfaEnabled()) {
-            throw new MfaRequiredException;
+            $deviceFp = DeviceFingerprint::calculate(
+                userAgent: $request->userAgent ?? '',
+                ip: $request->ipAddress ?? 'unknown',
+                acceptLanguage: $request->acceptLanguage ?? '',
+                deviceName: $request->deviceName ?? 'Unknown Device',
+            );
+
+            $tempSessionId = SessionId::generate();
+            $mfaToken = $this->jwtService->generateAccessToken(
+                userId: $user->id()->toString(),
+                role: $user->role()->value,
+                mfaVerified: false,
+                sessionId: $tempSessionId,
+                deviceFingerprint: $deviceFp->toString(),
+                scope: 'mfa-verify',
+                ttl: 300,
+            );
+
+            return new LoginResponseDto(
+                accessToken: '',
+                refreshToken: '',
+                tokenType: 'bearer',
+                expiresIn: 300,
+                user: $this->mapUserToDto($user),
+                status: 'MFA_REQUIRED',
+                limitedToken: $mfaToken->toString(),
+            );
         }
 
         $user->recordSuccessfulLogin($request->ipAddress ?? 'unknown');

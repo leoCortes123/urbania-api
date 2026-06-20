@@ -13,6 +13,7 @@ use Urbania\Auth\Domain\Exceptions\DeviceNotRecognizedException;
 use Urbania\Auth\Domain\Exceptions\TokenExpiredException;
 use Urbania\Auth\Domain\Exceptions\TokenInvalidException;
 use Urbania\Auth\Domain\Repositories\RefreshTokenRepositoryInterface;
+use Urbania\Auth\Domain\Repositories\UserRepositoryInterface;
 use Urbania\Auth\Domain\ValueObjects\DeviceFingerprint;
 use Urbania\Shared\Application\Bus\EventBusInterface;
 
@@ -20,6 +21,7 @@ final readonly class RefreshTokenUseCase
 {
     public function __construct(
         private RefreshTokenRepositoryInterface $refreshTokenRepository,
+        private UserRepositoryInterface $userRepository,
         private JwtServiceInterface $jwtService,
         private EventBusInterface $eventBus,
     ) {}
@@ -48,10 +50,18 @@ final readonly class RefreshTokenUseCase
                 userAgent: $request->userAgent,
                 ip: $request->ipAddress ?? 'unknown',
                 acceptLanguage: '',
-                deviceName: $tokenEntity->deviceName() ?? '',
+                deviceName: $tokenEntity->deviceName() ?? 'Unknown Device',
             );
 
             if (! $tokenEntity->deviceFingerprint()->equals($currentFp)) {
+                $this->eventBus->dispatch(new SuspiciousActivityDetected(
+                    userId: $tokenEntity->userId()->toString(),
+                    activityType: 'device_fingerprint_mismatch',
+                    ip: $request->ipAddress ?? 'unknown',
+                    details: ['tokenFamily' => $tokenEntity->tokenFamily()->toString()],
+                    timestamp: new \DateTimeImmutable,
+                ));
+
                 throw new DeviceNotRecognizedException;
             }
         }
@@ -62,6 +72,7 @@ final readonly class RefreshTokenUseCase
         }
 
         $tokenEntity->revoke('rotated');
+        $this->refreshTokenRepository->revoke($tokenHash, 'rotated');
 
         $newRefreshTokenRaw = $this->jwtService->generateRefreshToken();
         $newTokenHash = hash('sha256', $newRefreshTokenRaw);
@@ -86,10 +97,14 @@ final readonly class RefreshTokenUseCase
 
         $tokenEntity->markUsed();
 
+        $user = $this->userRepository->findById($tokenEntity->userId());
+        $role = $user?->role()->value ?? 'user';
+        $mfaVerified = $user?->isMfaEnabled() ?? false;
+
         $accessToken = $this->jwtService->generateAccessToken(
             userId: $tokenEntity->userId()->toString(),
-            role: 'user',
-            mfaVerified: false,
+            role: $role,
+            mfaVerified: $mfaVerified,
             sessionId: $tokenEntity->sessionId(),
             deviceFingerprint: $tokenEntity->deviceFingerprint()?->toString() ?? '',
         );
