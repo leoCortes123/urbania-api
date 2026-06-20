@@ -1,0 +1,67 @@
+name: Quality Assurance
+
+on: [push, pull_request]
+
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:18-alpine
+        env:
+          POSTGRES_DB: urbania_test
+          POSTGRES_USER: urbania
+          POSTGRES_PASSWORD: secret
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          extensions: pgsql, pdo_pgsql, redis, mbstring, bcmath, intl, gd, fileinfo
+          coverage: xdebug
+
+      - name: Copy .env
+        run: cp .env.ci .env
+
+      - name: Install dependencies
+        run: composer install --prefer-dist --no-interaction --no-progress
+
+      - name: Generate key
+        run: php artisan key:generate
+
+      - name: Run migrations
+        run: php artisan migrate --force
+
+      - name: Generate JWT keys
+        run: php artisan jwt:generate
+
+      - name: Laravel Pint
+        run: vendor/bin/pint --test
+
+      - name: PHPStan
+        run: vendor/bin/phpstan analyse --no-progress
+
+      - name: Pest Tests + Coverage
+        run: vendor/bin/pest --coverage --min=80 -c phpunit.xml.ci
+
+      - name: Scribe Docs
+        run: php artisan scribe:generate

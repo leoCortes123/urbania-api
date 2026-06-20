@@ -41,14 +41,22 @@
         }
     },
     "scripts": {
-        "test": "pest",
-        "stan": "phpstan analyse --memory-limit=1G",
-        "lint": "pint --test",
-        "fmt": "pint",
+        "test": "vendor/bin/pest",
+        "test:unit": "vendor/bin/pest --filter=Unit",
+        "test:integration": "vendor/bin/pest --filter=Integration",
+        "test:feature": "vendor/bin/pest --filter=Feature",
+        "test:security": "vendor/bin/pest --filter=Security",
+        "test:coverage": "vendor/bin/pest --coverage --min=80",
+        "stan": "vendor/bin/phpstan analyse",
+        "lint": "vendor/bin/pint --test",
+        "fmt": "vendor/bin/pint",
+        "migrate": "php artisan migrate",
+        "rollback": "php artisan migrate:rollback",
+        "scribe": "php artisan scribe:generate",
         "ci": [
-            "composer lint",
-            "composer stan",
-            "composer test"
+            "@lint",
+            "@stan",
+            "@test"
         ],
         "clean-migrations": "@php -r \"array_map('unlink', glob('database/migrations/*'));\"",
         "create-dirs": "@php scripts/setup_dirs.php",
@@ -88,7 +96,8 @@
         "allow-plugins": {
             "pestphp/pest-plugin": true,
             "php-http/discovery": true
-        }
+        },
+        "process-timeout": 1200
     },
     "minimum-stability": "dev",
     "prefer-stable": true

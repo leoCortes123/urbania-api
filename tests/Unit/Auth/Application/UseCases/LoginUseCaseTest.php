@@ -155,7 +155,6 @@ it('returns FORCE_PASSWORD_CHANGE status with limited token', function (): void 
     $user = createLoginUser();
     $reflection = new ReflectionClass($user);
     $mustChangePasswordProperty = $reflection->getProperty('mustChangePassword');
-    $mustChangePasswordProperty->setAccessible(true);
     $mustChangePasswordProperty->setValue($user, true);
 
     $request = new LoginRequestDto(

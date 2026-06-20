@@ -16,9 +16,12 @@
 /public/build
 /public/hot
 /public/storage
+/public/vendor/
 /storage/*.key
 /storage/pail
 /vendor
+/.scribe/
+/build/
 Homestead.json
 Homestead.yaml
 Thumbs.db
