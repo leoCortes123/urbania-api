@@ -39,6 +39,9 @@ final readonly class UserMapper
         $this->setPrivateProperty($user, 'lastLoginIp', $model->last_login_ip);
         $this->setPrivateProperty($user, 'passwordChangedAt', $this->toDateTimeImmutable($model->password_changed_at));
         $this->setPrivateProperty($user, 'mustChangePassword', (bool) $model->must_change_password);
+        $this->setPrivateProperty($user, 'phone', $model->phone);
+        $this->setPrivateProperty($user, 'unit', $model->unit);
+        $this->setPrivateProperty($user, 'avatarUrl', $model->avatar_url);
         $this->setPrivateProperty($user, 'createdAt', $this->toDateTimeImmutable($model->created_at) ?? throw new \RuntimeException('Expected non-null datetime'));
         $this->setPrivateProperty($user, 'updatedAt', $this->toDateTimeImmutable($model->updated_at) ?? throw new \RuntimeException('Expected non-null datetime'));
         $this->setPrivateProperty($user, 'deletedAt', $this->toDateTimeImmutable($model->deleted_at));
@@ -55,9 +58,9 @@ final readonly class UserMapper
             'id' => $entity->id()->toString(),
             'email' => $entity->email()->toString(),
             'name' => $entity->name(),
-            'phone' => null,
-            'unit' => null,
-            'avatar_url' => null,
+            'phone' => $entity->phone(),
+            'unit' => $entity->unit(),
+            'avatar_url' => $entity->avatarUrl(),
             'password_hash' => $entity->passwordHash()->toString(),
             'email_verified_at' => $entity->emailVerifiedAt()?->format('Y-m-d H:i:s'),
             'mfa_secret' => $entity->mfaSecret(),
@@ -73,6 +76,28 @@ final readonly class UserMapper
             'status' => $entity->status()->value,
             'deleted_at' => $entity->deletedAt()?->format('Y-m-d H:i:s'),
         ];
+    }
+
+    /**
+     * @param  list<string>  $changedFields
+     * @return array<string, mixed>
+     */
+    public function toPersistencePartial(UserEntity $entity, array $changedFields): array
+    {
+        $data = [];
+
+        foreach ($changedFields as $field) {
+            $data[$field] = match ($field) {
+                'name' => $entity->name(),
+                'phone' => $entity->phone(),
+                'avatar_url' => $entity->avatarUrl(),
+                default => throw new \InvalidArgumentException("Field {$field} cannot be partially persisted"),
+            };
+        }
+
+        $data['updated_at'] = $entity->updatedAt()->format('Y-m-d H:i:s');
+
+        return $data;
     }
 
     private function setPrivateProperty(object $object, string $property, mixed $value): void

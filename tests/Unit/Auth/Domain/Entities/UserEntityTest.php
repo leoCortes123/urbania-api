@@ -150,3 +150,30 @@ it('exposes id as uuid', function (): void {
 
     expect($user->id()->toString())->toMatch('/^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i');
 });
+
+it('updates profile and tracks changed fields', function (): void {
+    $user = createUser();
+
+    $user->updateProfile('Jane Doe', '3007654321', 'https://urbania.example.com/new-avatar.jpg');
+
+    expect($user->name())->toBe('Jane Doe')
+        ->and($user->phone())->toBe('3007654321')
+        ->and($user->avatarUrl())->toBe('https://urbania.example.com/new-avatar.jpg')
+        ->and($user->changedFields())->toContain('name', 'phone', 'avatar_url');
+});
+
+it('preserves optional profile fields from creation', function (): void {
+    $user = UserEntity::create(
+        Email::fromString('user@example.com'),
+        'John Doe',
+        Password::fromPlainText('SecureP@ss123'),
+        UserRole::USER,
+        phone: '3001234567',
+        unit: 'Apto 101',
+        avatarUrl: 'https://urbania.example.com/avatar.jpg',
+    );
+
+    expect($user->phone())->toBe('3001234567')
+        ->and($user->unit())->toBe('Apto 101')
+        ->and($user->avatarUrl())->toBe('https://urbania.example.com/avatar.jpg');
+});

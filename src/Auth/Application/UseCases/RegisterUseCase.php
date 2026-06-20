@@ -42,6 +42,8 @@ final readonly class RegisterUseCase
             name: $request->name,
             password: $password,
             role: UserRole::USER,
+            phone: $request->phone,
+            unit: $request->unit,
         );
 
         $this->userRepository->save($user);
@@ -56,8 +58,8 @@ final readonly class RegisterUseCase
             id: $user->id()->toString(),
             name: $user->name(),
             email: $user->email()->toString(),
-            phone: null,
-            unit: null,
+            phone: $user->phone(),
+            unit: $user->unit(),
             role: $user->role()->value,
             status: $user->status()->value,
             message: 'Registro exitoso. Bienvenido a Urbania.',

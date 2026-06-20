@@ -4,7 +4,10 @@ declare(strict_types=1);
 
 use Urbania\Auth\Domain\Exceptions\DeviceNotRecognizedException;
 use Urbania\Auth\Domain\Exceptions\EmailAlreadyExistsException;
+use Urbania\Auth\Domain\Exceptions\EmailAlreadyVerifiedException;
+use Urbania\Auth\Domain\Exceptions\EmailVerificationInvalidException;
 use Urbania\Auth\Domain\Exceptions\InvalidCredentialsException;
+use Urbania\Auth\Domain\Exceptions\InvalidResetTokenException;
 use Urbania\Auth\Domain\Exceptions\MfaInvalidCodeException;
 use Urbania\Auth\Domain\Exceptions\MfaRequiredException;
 use Urbania\Auth\Domain\Exceptions\PasswordReusedException;
@@ -28,6 +31,9 @@ it('all auth exceptions extend DomainException', function (): void {
         SessionNotFoundException::class,
         PasswordReusedException::class,
         EmailAlreadyExistsException::class,
+        InvalidResetTokenException::class,
+        EmailAlreadyVerifiedException::class,
+        EmailVerificationInvalidException::class,
     ];
 
     foreach ($exceptions as $exceptionClass) {
@@ -80,6 +86,18 @@ it('has expected error codes and http status codes', function (): void {
     expect(new EmailAlreadyExistsException)
         ->errorCode->toBe('EMAIL_ALREADY_EXISTS')
         ->httpStatusCode->toBe(409);
+
+    expect(new InvalidResetTokenException)
+        ->errorCode->toBe('INVALID_RESET_TOKEN')
+        ->httpStatusCode->toBe(400);
+
+    expect(new EmailAlreadyVerifiedException)
+        ->errorCode->toBe('EMAIL_ALREADY_VERIFIED')
+        ->httpStatusCode->toBe(409);
+
+    expect(new EmailVerificationInvalidException)
+        ->errorCode->toBe('EMAIL_VERIFICATION_INVALID')
+        ->httpStatusCode->toBe(400);
 });
 
 it('weak password factory creates expected exception', function (): void {

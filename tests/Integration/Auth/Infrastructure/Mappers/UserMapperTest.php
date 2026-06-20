@@ -88,3 +88,24 @@ it('creates value objects correctly from raw values', function (): void {
         ->and($domain->status())->toBeInstanceOf(UserStatus::class)
         ->and($domain->passwordHash())->toBeInstanceOf(Password::class);
 });
+
+it('maps only changed fields in partial persistence', function (): void {
+    $model = UserFactory::new()->create([
+        'name' => 'Original Name',
+        'phone' => '3001234567',
+        'avatar_url' => 'https://urbania.example.com/old.jpg',
+    ]);
+
+    $domain = $this->mapper->toDomain($model);
+    $domain->updateProfile('Updated Name', '3007654321', 'https://urbania.example.com/new.jpg');
+
+    $partial = $this->mapper->toPersistencePartial($domain, $domain->changedFields());
+
+    expect($partial)
+        ->toHaveKey('name', 'Updated Name')
+        ->toHaveKey('phone', '3007654321')
+        ->toHaveKey('avatar_url', 'https://urbania.example.com/new.jpg')
+        ->toHaveKey('updated_at')
+        ->not->toHaveKey('email')
+        ->not->toHaveKey('password_hash');
+});

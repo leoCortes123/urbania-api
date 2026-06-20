@@ -47,7 +47,12 @@ final readonly class EloquentUserRepository implements UserRepositoryInterface
 
     public function update(UserEntity $user): void
     {
-        $data = $this->mapper->toPersistence($user);
+        if ($user->hasChangedFields()) {
+            $data = $this->mapper->toPersistencePartial($user, $user->changedFields());
+        } else {
+            $data = $this->mapper->toPersistence($user);
+        }
+
         UserModel::where('id', $user->id()->toString())->update($data);
     }
 

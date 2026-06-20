@@ -7,12 +7,18 @@ namespace Urbania\Auth\Infrastructure\Http\Controllers;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
+use Urbania\Auth\Application\DTOs\ChangePasswordRequestDto;
+use Urbania\Auth\Application\DTOs\ForgotPasswordRequestDto;
 use Urbania\Auth\Application\DTOs\LoginRequestDto;
 use Urbania\Auth\Application\DTOs\LogoutRequestDto;
 use Urbania\Auth\Application\DTOs\RefreshTokenRequestDto;
 use Urbania\Auth\Application\DTOs\RegisterRequestDto;
+use Urbania\Auth\Application\DTOs\ResetPasswordRequestDto;
+use Urbania\Auth\Application\DTOs\UpdateProfileRequestDto;
 use Urbania\Auth\Application\DTOs\UserResponseDto;
 use Urbania\Auth\Application\Services\JwtServiceInterface;
+use Urbania\Auth\Application\UseCases\ChangePasswordUseCase;
+use Urbania\Auth\Application\UseCases\ForgotPasswordUseCase;
 use Urbania\Auth\Application\UseCases\GetCurrentUserUseCase;
 use Urbania\Auth\Application\UseCases\ListSessionsUseCase;
 use Urbania\Auth\Application\UseCases\LoginUseCase;
@@ -25,9 +31,15 @@ use Urbania\Auth\Application\UseCases\MfaVerifyBackupUseCase;
 use Urbania\Auth\Application\UseCases\MfaVerifyUseCase;
 use Urbania\Auth\Application\UseCases\RefreshTokenUseCase;
 use Urbania\Auth\Application\UseCases\RegisterUseCase;
+use Urbania\Auth\Application\UseCases\ResendVerificationUseCase;
+use Urbania\Auth\Application\UseCases\ResetPasswordUseCase;
 use Urbania\Auth\Application\UseCases\RevokeAllSessionsUseCase;
 use Urbania\Auth\Application\UseCases\RevokeSessionUseCase;
+use Urbania\Auth\Application\UseCases\UpdateProfileUseCase;
+use Urbania\Auth\Application\UseCases\VerifyEmailUseCase;
 use Urbania\Auth\Domain\Exceptions\TokenInvalidException;
+use Urbania\Auth\Infrastructure\Http\Requests\ChangePasswordRequest;
+use Urbania\Auth\Infrastructure\Http\Requests\ForgotPasswordRequest;
 use Urbania\Auth\Infrastructure\Http\Requests\LoginRequest;
 use Urbania\Auth\Infrastructure\Http\Requests\LogoutRequest;
 use Urbania\Auth\Infrastructure\Http\Requests\MfaDisableRequest;
@@ -35,6 +47,9 @@ use Urbania\Auth\Infrastructure\Http\Requests\MfaEnableRequest;
 use Urbania\Auth\Infrastructure\Http\Requests\MfaVerifyRequest;
 use Urbania\Auth\Infrastructure\Http\Requests\RefreshTokenRequest;
 use Urbania\Auth\Infrastructure\Http\Requests\RegisterRequest;
+use Urbania\Auth\Infrastructure\Http\Requests\ResetPasswordRequest;
+use Urbania\Auth\Infrastructure\Http\Requests\UpdateProfileRequest;
+use Urbania\Auth\Infrastructure\Http\Requests\VerifyEmailRequest;
 use Urbania\Auth\Infrastructure\Http\Resources\TokenResource;
 use Urbania\Auth\Infrastructure\Http\Resources\UserResource;
 
@@ -383,5 +398,125 @@ final class AuthController extends Controller
         );
 
         return response()->json(null, 204);
+    }
+
+    public function forgotPassword(ForgotPasswordRequest $request, ForgotPasswordUseCase $useCase): JsonResponse
+    {
+        /** @var string $email */
+        $email = $request->validated('email');
+
+        $dto = new ForgotPasswordRequestDto(email: $email);
+        $result = $useCase->execute($dto);
+
+        return response()->json([
+            'data' => ['message' => $result['message']],
+            'meta' => ['trace_id' => $request->attributes->get('trace_id')],
+        ], 200);
+    }
+
+    public function resetPassword(ResetPasswordRequest $request, ResetPasswordUseCase $useCase): JsonResponse
+    {
+        /** @var string $email */
+        $email = $request->validated('email');
+        /** @var string $token */
+        $token = $request->validated('token');
+        /** @var string $password */
+        $password = $request->validated('password');
+        /** @var string $passwordConfirmation */
+        $passwordConfirmation = $request->validated('password_confirmation');
+
+        $dto = new ResetPasswordRequestDto(
+            email: $email,
+            token: $token,
+            password: $password,
+            passwordConfirmation: $passwordConfirmation,
+        );
+
+        $result = $useCase->execute($dto);
+
+        return response()->json([
+            'data' => ['message' => $result['message']],
+            'meta' => ['trace_id' => $request->attributes->get('trace_id')],
+        ], 200);
+    }
+
+    public function changePassword(ChangePasswordRequest $request, ChangePasswordUseCase $useCase): JsonResponse
+    {
+        $userId = $request->attributes->get('auth_user_id');
+        assert(is_string($userId) && $userId !== '');
+
+        /** @var string $currentPassword */
+        $currentPassword = $request->validated('current_password');
+        /** @var string $newPassword */
+        $newPassword = $request->validated('new_password');
+        /** @var string $newPasswordConfirmation */
+        $newPasswordConfirmation = $request->validated('new_password_confirmation');
+
+        $dto = new ChangePasswordRequestDto(
+            currentPassword: $currentPassword,
+            newPassword: $newPassword,
+            newPasswordConfirmation: $newPasswordConfirmation,
+        );
+
+        $result = $useCase->execute($dto, $userId);
+
+        return response()->json([
+            'data' => ['message' => $result['message']],
+            'meta' => ['trace_id' => $request->attributes->get('trace_id')],
+        ], 200);
+    }
+
+    public function updateProfile(UpdateProfileRequest $request, UpdateProfileUseCase $useCase): JsonResponse
+    {
+        $userId = $request->attributes->get('auth_user_id');
+        assert(is_string($userId) && $userId !== '');
+
+        /** @var string|null $name */
+        $name = $request->validated('name');
+        /** @var string|null $phone */
+        $phone = $request->validated('phone');
+        /** @var string|null $avatar */
+        $avatar = $request->validated('avatar');
+
+        $dto = new UpdateProfileRequestDto(
+            name: $name,
+            phone: $phone,
+            avatar: $avatar,
+        );
+
+        $result = $useCase->execute($dto, $userId);
+
+        $resource = new UserResource($result);
+
+        return response()->json([
+            'data' => $resource->resolve($request),
+            'meta' => ['trace_id' => $request->attributes->get('trace_id')],
+        ], 200);
+    }
+
+    public function verifyEmail(VerifyEmailRequest $request, VerifyEmailUseCase $useCase): JsonResponse
+    {
+        /** @var string $token */
+        $token = $request->validated('token');
+
+        $result = $useCase->execute($token);
+
+        return response()->json([
+            'data' => ['message' => $result['message']],
+            'meta' => ['trace_id' => $request->attributes->get('trace_id')],
+        ], 200);
+    }
+
+    public function resendVerification(Request $request, ResendVerificationUseCase $useCase): JsonResponse
+    {
+        $userId = $request->attributes->get('auth_user_id');
+        assert(is_string($userId) && $userId !== '');
+
+        $result = $useCase->execute($userId);
+
+        return response()->json([
+            'data' => ['message' => $result['message']],
+            'meta' => ['trace_id' => $request->attributes->get('trace_id')],
+        ], 200);
     }
 }

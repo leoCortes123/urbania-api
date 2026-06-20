@@ -168,11 +168,11 @@ final readonly class LoginUseCase
             id: $user->id()->toString(),
             name: $user->name(),
             email: $user->email()->toString(),
-            phone: null,
-            unit: null,
+            phone: $user->phone(),
+            unit: $user->unit(),
             role: $user->role()->value,
             status: $user->status()->value,
-            avatarUrl: null,
+            avatarUrl: $user->avatarUrl(),
             createdAt: $user->createdAt()->format('c'),
         );
     }

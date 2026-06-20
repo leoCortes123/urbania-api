@@ -47,5 +47,18 @@ class AppServiceProvider extends ServiceProvider
         RateLimiter::for('mfa-verify', function (Request $request): Limit {
             return Limit::perMinutes(5, 3)->by($request->ip());
         });
+
+        RateLimiter::for('forgot-password', function (Request $request): Limit {
+            $key = $request->string('email')->value().'|'.$request->ip();
+
+            return Limit::perHour(3)->by($key);
+        });
+
+        RateLimiter::for('verification-resend', function (Request $request): Limit {
+            $userId = $request->attributes->get('auth_user_id');
+            $key = is_string($userId) && $userId !== '' ? $userId : (string) $request->ip();
+
+            return Limit::perHour(3)->by($key);
+        });
     }
 }

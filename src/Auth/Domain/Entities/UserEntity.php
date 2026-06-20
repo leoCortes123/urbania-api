@@ -51,6 +51,15 @@ final class UserEntity
 
     private ?\DateTimeImmutable $deletedAt;
 
+    private ?string $phone;
+
+    private ?string $unit;
+
+    private ?string $avatarUrl;
+
+    /** @var list<string> */
+    private array $changedFields;
+
     /**
      * @param  array<int, string>  $mfaBackupCodes
      */
@@ -74,6 +83,9 @@ final class UserEntity
         \DateTimeImmutable $createdAt,
         \DateTimeImmutable $updatedAt,
         ?\DateTimeImmutable $deletedAt,
+        ?string $phone = null,
+        ?string $unit = null,
+        ?string $avatarUrl = null,
     ) {
         $this->id = $id;
         $this->email = $email;
@@ -94,6 +106,10 @@ final class UserEntity
         $this->createdAt = $createdAt;
         $this->updatedAt = $updatedAt;
         $this->deletedAt = $deletedAt;
+        $this->phone = $phone;
+        $this->unit = $unit;
+        $this->avatarUrl = $avatarUrl;
+        $this->changedFields = [];
     }
 
     public static function create(
@@ -101,6 +117,9 @@ final class UserEntity
         string $name,
         Password $password,
         UserRole $role,
+        ?string $phone = null,
+        ?string $unit = null,
+        ?string $avatarUrl = null,
     ): self {
         $now = new \DateTimeImmutable;
 
@@ -124,6 +143,9 @@ final class UserEntity
             $now,
             $now,
             null,
+            $phone,
+            $unit,
+            $avatarUrl,
         );
     }
 
@@ -170,6 +192,24 @@ final class UserEntity
     public function markEmailAsVerified(): void
     {
         $this->emailVerifiedAt = new \DateTimeImmutable;
+        $this->updatedAt = new \DateTimeImmutable;
+    }
+
+    public function updateProfile(string $name, ?string $phone, ?string $avatarUrl): void
+    {
+        $this->name = $name;
+        $this->changedFields[] = 'name';
+
+        if ($phone !== null) {
+            $this->phone = $phone;
+            $this->changedFields[] = 'phone';
+        }
+
+        if ($avatarUrl !== null) {
+            $this->avatarUrl = $avatarUrl;
+            $this->changedFields[] = 'avatar_url';
+        }
+
         $this->updatedAt = new \DateTimeImmutable;
     }
 
@@ -346,5 +386,33 @@ final class UserEntity
     public function deletedAt(): ?\DateTimeImmutable
     {
         return $this->deletedAt;
+    }
+
+    public function phone(): ?string
+    {
+        return $this->phone;
+    }
+
+    public function unit(): ?string
+    {
+        return $this->unit;
+    }
+
+    public function avatarUrl(): ?string
+    {
+        return $this->avatarUrl;
+    }
+
+    /**
+     * @return list<string>
+     */
+    public function changedFields(): array
+    {
+        return array_values(array_unique($this->changedFields));
+    }
+
+    public function hasChangedFields(): bool
+    {
+        return $this->changedFields !== [];
     }
 }
