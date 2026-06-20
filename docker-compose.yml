@@ -19,6 +19,7 @@ services:
     environment:
       - APP_ENV=local
       - APP_DEBUG=true
+      - OPENSSL_CONF=/etc/ssl/openssl.cnf
     entrypoint: ["/bin/sh", "/var/www/docker-entrypoint.sh"]
 
   nginx:

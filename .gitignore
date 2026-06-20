@@ -18,6 +18,8 @@
 /public/storage
 /public/vendor/
 /storage/*.key
+/storage/jwt/*.pem
+/storage/jwt/*.pem.pub
 /storage/pail
 /vendor
 /.scribe/

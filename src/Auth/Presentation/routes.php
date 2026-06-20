@@ -14,7 +14,7 @@ Route::middleware('api')->prefix('api/v1/auth')->group(function (): void {
     Route::post('/reset-password', [AuthController::class, 'resetPassword']);
     Route::post('/verify-email', [AuthController::class, 'verifyEmail']);
 
-    Route::middleware(['jwt.auth'])->group(function (): void {
+    Route::middleware(['urbania.jwt'])->group(function (): void {
         Route::post('/logout', [AuthController::class, 'logout'])->middleware('throttle:api');
         Route::get('/me', [AuthController::class, 'me'])->middleware('throttle:api');
         Route::patch('/me', [AuthController::class, 'updateProfile'])->middleware('throttle:api');

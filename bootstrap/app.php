@@ -38,7 +38,7 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
 
         $middleware->alias([
-            'jwt.auth' => JwtAuthenticate::class,
+            'urbania.jwt' => JwtAuthenticate::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
