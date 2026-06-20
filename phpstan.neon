@@ -1,0 +1,12 @@
+parameters:
+  level: 10
+  paths:
+    - src/
+    - app/
+  scanDirectories:
+    - vendor/laravel/framework/src
+  excludePaths:
+    - src/*/Presentation/
+  ignoreErrors: []
+  bootstrapFiles:
+    - vendor/laravel/framework/src/Illuminate/Foundation/helpers.php
