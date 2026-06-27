@@ -8,6 +8,7 @@ use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\Exceptions\ThrottleRequestsException;
+use Illuminate\Http\Middleware\HandleCors;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 use Ramsey\Uuid\Uuid;
@@ -16,6 +17,7 @@ use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Urbania\Auth\Infrastructure\Http\Middleware\JwtAuthenticate;
 use Urbania\Shared\Domain\Exceptions\DomainException;
+use Urbania\Shared\Infrastructure\Middleware\CorsMiddleware;
 use Urbania\Shared\Infrastructure\Middleware\RequestLoggingMiddleware;
 use Urbania\Shared\Infrastructure\Middleware\SecurityHeadersMiddleware;
 use Urbania\Shared\Infrastructure\Middleware\TraceIdMiddleware;
@@ -28,6 +30,8 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        $middleware->prepend(CorsMiddleware::class);
+
         $middleware->prependToGroup('api', [
             TraceIdMiddleware::class,
             RequestLoggingMiddleware::class,
@@ -36,6 +40,8 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->appendToGroup('api', [
             SecurityHeadersMiddleware::class,
         ]);
+
+        $middleware->remove(HandleCors::class);
 
         $middleware->alias([
             'urbania.jwt' => JwtAuthenticate::class,

@@ -26,8 +26,10 @@ class AppServiceProvider extends ServiceProvider
     {
         RateLimiter::for('login', function (Request $request): Limit {
             $key = $request->string('email')->value().'|'.$request->ip();
+            $maxAttempts = (int) env('RATE_LIMIT_LOGIN_MAX_ATTEMPTS', 5);
+            $decayMinutes = (int) env('RATE_LIMIT_LOGIN_DECAY_MINUTES', 15);
 
-            return Limit::perMinutes(15, 5)->by($key);
+            return Limit::perMinutes($decayMinutes, $maxAttempts)->by($key);
         });
 
         RateLimiter::for('register', function (Request $request): Limit {
@@ -35,13 +37,18 @@ class AppServiceProvider extends ServiceProvider
         });
 
         RateLimiter::for('refresh', function (Request $request): Limit {
-            return Limit::perMinutes(15, 10)->by($request->ip());
+            $maxAttempts = (int) env('RATE_LIMIT_REFRESH_MAX_ATTEMPTS', 10);
+            $decayMinutes = (int) env('RATE_LIMIT_REFRESH_DECAY_MINUTES', 15);
+
+            return Limit::perMinutes($decayMinutes, $maxAttempts)->by($request->ip());
         });
 
         RateLimiter::for('api', function (Request $request): Limit {
             $key = $request->user() !== null ? $request->user()->id : $request->ip();
+            $maxAttempts = (int) env('RATE_LIMIT_API_MAX_ATTEMPTS', 1000);
+            $decayMinutes = (int) env('RATE_LIMIT_API_DECAY_MINUTES', 1);
 
-            return Limit::perMinute(1000)->by((string) $key);
+            return Limit::perMinutes($decayMinutes, $maxAttempts)->by((string) $key);
         });
 
         RateLimiter::for('mfa-verify', function (Request $request): Limit {
