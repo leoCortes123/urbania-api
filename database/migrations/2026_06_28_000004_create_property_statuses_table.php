@@ -1,0 +1,29 @@
+<?php
+
+declare(strict_types=1);
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    public function up(): void
+    {
+        Schema::create('property_statuses', function (Blueprint $table) {
+            $table->uuid('id')->primary();
+            $table->string('code', 20)->unique();
+            $table->string('name', 100);
+            $table->text('description')->nullable();
+            $table->boolean('allows_residents')->default(true);
+            $table->boolean('is_active')->default(true);
+            $table->integer('sort_order')->default(0);
+            $table->timestamps();
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::dropIfExists('property_statuses');
+    }
+};

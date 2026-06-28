@@ -9,6 +9,8 @@ use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
 
+// Directorio seeders
+
 class DatabaseSeeder extends Seeder
 {
     use WithoutModelEvents;
@@ -70,6 +72,14 @@ class DatabaseSeeder extends Seeder
             'role' => 'user',
             'status' => 'active',
             'email_verified_at' => now(),
+        ]);
+
+        $this->call([
+            CondominiumSeeder::class,
+            PropertyTypeSeeder::class,
+            PropertyStatusSeeder::class,
+            PropertyDocumentTypeSeeder::class,
+            DirectorioSeeder::class,
         ]);
     }
 }
