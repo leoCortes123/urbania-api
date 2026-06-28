@@ -100,4 +100,27 @@ final class PropertyDocumentTypeEntity
     {
         return $this->updatedAt;
     }
+
+    public function update(
+        string $name,
+        ?string $description,
+        int $sortOrder,
+    ): void {
+        $this->name = $name;
+        $this->description = $description;
+        $this->sortOrder = $sortOrder;
+        $this->updatedAt = new \DateTimeImmutable;
+    }
+
+    public function updateCode(string $code): void
+    {
+        $this->code = $code;
+        $this->updatedAt = new \DateTimeImmutable;
+    }
+
+    public function deactivate(): void
+    {
+        $this->isActive = false;
+        $this->updatedAt = new \DateTimeImmutable;
+    }
 }

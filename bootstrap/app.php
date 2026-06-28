@@ -62,6 +62,20 @@ return Application::configure(basePath: dirname(__DIR__))
                     $code = $e->errorCode;
                     $status = $e->httpStatusCode;
                     $message = $e->getMessage();
+
+                    $payload = [
+                        'error' => [
+                            'code' => $code,
+                            'message' => $message,
+                            'trace_id' => $traceId,
+                        ],
+                    ];
+
+                    if ($e instanceof \Urbania\Propiedades\Domain\Exceptions\PropertyHasDependenciesException) {
+                        $payload['error']['details'] = $e->details;
+                    }
+
+                    return response()->json($payload, $status);
                 } elseif ($e instanceof ValidationException) {
                     $code = 'VALIDATION_ERROR';
                     $status = 422;

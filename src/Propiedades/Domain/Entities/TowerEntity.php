@@ -130,4 +130,21 @@ final class TowerEntity
     {
         return $this->deletedAt;
     }
+
+    public function update(
+        ?string $name = null,
+        ?string $code = null,
+        ?int $floorCount = null,
+        ?bool $hasElevator = null,
+        ?string $description = null,
+        ?int $sortOrder = null,
+    ): void {
+        $this->name = $name ?? $this->name;
+        $this->code = $code ?? $this->code;
+        $this->floorCount = $floorCount ?? $this->floorCount;
+        $this->hasElevator = $hasElevator ?? $this->hasElevator;
+        $this->description = $description ?? $this->description;
+        $this->sortOrder = $sortOrder ?? $this->sortOrder;
+        $this->updatedAt = new \DateTimeImmutable;
+    }
 }

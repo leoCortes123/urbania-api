@@ -190,4 +190,37 @@ final class PropertyEntity
     {
         return $this->deletedAt;
     }
+
+    public function update(
+        ?Uuid $towerId = null,
+        ?Uuid $propertyTypeId = null,
+        ?int $floor = null,
+        ?string $unitNumber = null,
+        ?string $areaM2 = null,
+        ?string $coefficient = null,
+        ?int $bedrooms = null,
+        ?int $bathrooms = null,
+        ?bool $hasParking = null,
+        ?string $parkingLot = null,
+        ?string $notes = null,
+    ): void {
+        $this->towerId = $towerId ?? $this->towerId;
+        $this->propertyTypeId = $propertyTypeId ?? $this->propertyTypeId;
+        $this->floor = $floor ?? $this->floor;
+        $this->unitNumber = $unitNumber ?? $this->unitNumber;
+        $this->areaM2 = $areaM2 ?? $this->areaM2;
+        $this->coefficient = $coefficient ?? $this->coefficient;
+        $this->bedrooms = $bedrooms ?? $this->bedrooms;
+        $this->bathrooms = $bathrooms ?? $this->bathrooms;
+        $this->hasParking = $hasParking ?? $this->hasParking;
+        $this->parkingLot = $parkingLot ?? $this->parkingLot;
+        $this->notes = $notes ?? $this->notes;
+        $this->updatedAt = new \DateTimeImmutable;
+    }
+
+    public function changeStatus(Uuid $propertyStatusId): void
+    {
+        $this->propertyStatusId = $propertyStatusId;
+        $this->updatedAt = new \DateTimeImmutable;
+    }
 }

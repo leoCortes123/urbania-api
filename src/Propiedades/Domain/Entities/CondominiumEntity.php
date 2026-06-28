@@ -179,4 +179,31 @@ final class CondominiumEntity
     {
         return $this->deletedAt;
     }
+
+    public function update(
+        ?string $name = null,
+        ?string $address = null,
+        ?string $city = null,
+        ?string $department = null,
+        ?string $country = null,
+        ?string $nit = null,
+        ?string $phone = null,
+        ?string $email = null,
+        ?string $legalRepresentative = null,
+        ?string $totalCoefficient = null,
+        ?string $logoUrl = null,
+    ): void {
+        $this->name = $name ?? $this->name;
+        $this->address = $address ?? $this->address;
+        $this->city = $city ?? $this->city;
+        $this->department = $department ?? $this->department;
+        $this->country = $country ?? $this->country;
+        $this->nit = $nit ?? $this->nit;
+        $this->phone = $phone ?? $this->phone;
+        $this->email = $email ?? $this->email;
+        $this->legalRepresentative = $legalRepresentative ?? $this->legalRepresentative;
+        $this->totalCoefficient = $totalCoefficient ?? $this->totalCoefficient;
+        $this->logoUrl = $logoUrl ?? $this->logoUrl;
+        $this->updatedAt = new \DateTimeImmutable;
+    }
 }

@@ -7,7 +7,7 @@ namespace Urbania\Propiedades\Application\DTOs;
 final readonly class PaginatedResponseDto
 {
     /**
-     * @param  array<PropertyTypeResponseDto|PropertyStatusResponseDto>  $items
+     * @param  array<mixed>  $items
      */
     public function __construct(
         public array $items,
