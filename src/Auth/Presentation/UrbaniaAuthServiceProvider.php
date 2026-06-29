@@ -20,10 +20,12 @@ use Urbania\Auth\Infrastructure\Persistence\EloquentPasswordHistoryService;
 use Urbania\Auth\Infrastructure\Persistence\EloquentPasswordResetTokenRepository;
 use Urbania\Auth\Infrastructure\Persistence\EloquentRefreshTokenRepository;
 use Urbania\Auth\Infrastructure\Persistence\EloquentUserRepository;
+use Urbania\Auth\Infrastructure\Services\JwtTokenDecoder;
 use Urbania\Auth\Infrastructure\Services\LaravelMailerService;
 use Urbania\Auth\Infrastructure\Services\LocalAvatarStorageService;
 use Urbania\Auth\Infrastructure\Services\PhpOpenSourceSaverJwtService;
 use Urbania\Shared\Application\Bus\EventBusInterface;
+use Urbania\Shared\Application\Services\TokenDecoderInterface;
 
 final class UrbaniaAuthServiceProvider extends ServiceProvider
 {
@@ -39,6 +41,11 @@ final class UrbaniaAuthServiceProvider extends ServiceProvider
         $this->app->bind(
             JwtServiceInterface::class,
             PhpOpenSourceSaverJwtService::class,
+        );
+
+        $this->app->bind(
+            TokenDecoderInterface::class,
+            JwtTokenDecoder::class,
         );
 
         $this->app->bind(

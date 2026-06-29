@@ -127,8 +127,6 @@ final class AuthController extends Controller
         $passwordConfirmation = $request->validated('password_confirmation');
         /** @var string|null $phone */
         $phone = $request->validated('phone');
-        /** @var string|null $unit */
-        $unit = $request->validated('unit');
 
         $dto = new RegisterRequestDto(
             name: $name,
@@ -136,7 +134,6 @@ final class AuthController extends Controller
             password: $password,
             passwordConfirmation: $passwordConfirmation,
             phone: $phone,
-            unit: $unit,
         );
 
         $result = $useCase->execute($dto);
@@ -146,7 +143,6 @@ final class AuthController extends Controller
             name: $result->name,
             email: $result->email,
             phone: $result->phone,
-            unit: $result->unit,
             role: $result->role,
             status: $result->status,
             avatarUrl: null,

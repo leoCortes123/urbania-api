@@ -20,6 +20,7 @@ function generateAccessTokenForPassword(User $user): string
         mfaVerified: false,
         sessionId: SessionId::generate(),
         deviceFingerprint: '',
+        organizationId: $user->organization_id,
     )->toString();
 }
 
@@ -33,6 +34,7 @@ function generateVerificationTokenForPassword(User $user): string
         mfaVerified: false,
         sessionId: SessionId::generate(),
         deviceFingerprint: '',
+        organizationId: $user->organization_id,
         scope: 'email-verification',
         ttl: 3600,
     )->toString();
@@ -208,7 +210,7 @@ it('returns 401 for update profile without token', function (): void {
     ]);
 
     $response->assertUnauthorized()
-        ->assertJsonPath('error.code', 'TOKEN_INVALID');
+        ->assertJsonPath('error.code', 'TENANT_REQUIRED');
 });
 
 it('verifies email with valid token', function (): void {

@@ -67,7 +67,6 @@ it('passes with valid registration data', function (): void {
         'password' => 'Password123!',
         'password_confirmation' => 'Password123!',
         'phone' => '+57 300 123 4567',
-        'unit' => 'Apto 101',
     ]);
 
     expect($errors)->toBeEmpty();

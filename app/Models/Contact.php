@@ -26,6 +26,7 @@ class Contact extends Model
         'emergency_contact_name',
         'emergency_contact_phone',
         'notes',
+        'organization_id',
     ];
 
     protected $casts = [

@@ -21,6 +21,7 @@ function createAdminTokenForStatus(): string
         mfaVerified: false,
         sessionId: SessionId::generate(),
         deviceFingerprint: '',
+        organizationId: $user->organization_id,
     )->toString();
 }
 
@@ -35,6 +36,7 @@ function createUserTokenForStatus(): string
         mfaVerified: false,
         sessionId: SessionId::generate(),
         deviceFingerprint: '',
+        organizationId: $user->organization_id,
     )->toString();
 }
 

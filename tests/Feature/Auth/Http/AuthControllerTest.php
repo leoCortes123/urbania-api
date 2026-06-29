@@ -18,6 +18,7 @@ function generateTokenFor(User $user): string
         mfaVerified: false,
         sessionId: SessionId::generate(),
         deviceFingerprint: '',
+        organizationId: $user->organization_id,
     )->toString();
 }
 
@@ -135,7 +136,6 @@ it('registers a new user and returns user data with message', function (): void 
         'password' => 'Password123!',
         'password_confirmation' => 'Password123!',
         'phone' => '3001234567',
-        'unit' => 'Apto 101',
     ]);
 
     $response->assertCreated()
@@ -145,7 +145,6 @@ it('registers a new user and returns user data with message', function (): void 
                 'name',
                 'email',
                 'phone',
-                'unit',
                 'role',
                 'status',
                 'message',
@@ -210,7 +209,7 @@ it('returns 401 when logging out without token', function (): void {
     ]);
 
     $response->assertUnauthorized()
-        ->assertJsonPath('error.code', 'TOKEN_INVALID');
+        ->assertJsonPath('error.code', 'TENANT_REQUIRED');
 });
 
 it('refreshes tokens with a valid refresh token', function (): void {
@@ -267,7 +266,7 @@ it('returns 401 for me without token', function (): void {
     $response = $this->getJson('/api/v1/auth/me');
 
     $response->assertUnauthorized()
-        ->assertJsonPath('error.code', 'TOKEN_INVALID');
+        ->assertJsonPath('error.code', 'TENANT_REQUIRED');
 });
 
 it('returns 404 for me when user is soft deleted', function (): void {

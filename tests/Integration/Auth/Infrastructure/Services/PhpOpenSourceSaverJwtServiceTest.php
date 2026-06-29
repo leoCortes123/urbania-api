@@ -24,13 +24,14 @@ it('generates access token with all required claims', function (): void {
         mfaVerified: true,
         sessionId: $sessionId,
         deviceFingerprint: 'device-fp-hash',
+        organizationId: '01900000-0000-7fff-8fff-ffffffffffff',
     );
 
     $decoded = $this->service->decode($token->toString());
 
     expect($decoded)->toHaveKeys([
         'jti', 'sub', 'iss', 'aud', 'iat', 'nbf', 'exp',
-        'role', 'mfa_verified', 'session_id', 'device_fp',
+        'role', 'mfa_verified', 'session_id', 'device_fp', 'org_id',
     ])
         ->and($decoded['iss'])->toBe('https://api.urbania.com')
         ->and($decoded['aud'])->toBe(['api.urbania.com', 'web.urbania.com', 'app.urbania'])
@@ -38,7 +39,8 @@ it('generates access token with all required claims', function (): void {
         ->and($decoded['role'])->toBe('user')
         ->and($decoded['mfa_verified'])->toBeTrue()
         ->and($decoded['session_id'])->toBe($sessionId->toString())
-        ->and($decoded['device_fp'])->toBe('device-fp-hash');
+        ->and($decoded['device_fp'])->toBe('device-fp-hash')
+        ->and($decoded['org_id'])->toBe('01900000-0000-7fff-8fff-ffffffffffff');
 });
 
 it('includes scope claim when provided', function (): void {
@@ -48,6 +50,7 @@ it('includes scope claim when provided', function (): void {
         mfaVerified: false,
         sessionId: SessionId::generate(),
         deviceFingerprint: 'fp',
+        organizationId: '01900000-0000-7fff-8fff-ffffffffffff',
         scope: 'change-password',
     );
 
@@ -66,6 +69,7 @@ it('sets correct expiration for custom ttl', function (): void {
         mfaVerified: false,
         sessionId: SessionId::generate(),
         deviceFingerprint: 'fp',
+        organizationId: '01900000-0000-7fff-8fff-ffffffffffff',
         ttl: 60,
     );
 
@@ -90,12 +94,14 @@ it('decodes token payload correctly', function (): void {
         mfaVerified: false,
         sessionId: SessionId::generate(),
         deviceFingerprint: 'fp',
+        organizationId: '01900000-0000-7fff-8fff-ffffffffffff',
     );
 
     $decoded = $this->service->decode($token->toString());
 
     expect($decoded['role'])->toBe('admin')
-        ->and($decoded['sub'])->toBe('018fffff-ffff-7fff-8fff-ffffffffffff');
+        ->and($decoded['sub'])->toBe('018fffff-ffff-7fff-8fff-ffffffffffff')
+        ->and($decoded['org_id'])->toBe('01900000-0000-7fff-8fff-ffffffffffff');
 });
 
 it('validates a valid token and rejects expired token', function (): void {
@@ -105,6 +111,7 @@ it('validates a valid token and rejects expired token', function (): void {
         mfaVerified: false,
         sessionId: SessionId::generate(),
         deviceFingerprint: 'fp',
+        organizationId: '01900000-0000-7fff-8fff-ffffffffffff',
     );
 
     expect($this->service->validate($validToken->toString()))->toBeTrue();
@@ -115,6 +122,7 @@ it('validates a valid token and rejects expired token', function (): void {
         mfaVerified: false,
         sessionId: SessionId::generate(),
         deviceFingerprint: 'fp',
+        organizationId: '01900000-0000-7fff-8fff-ffffffffffff',
         ttl: -100,
     );
 
@@ -128,6 +136,7 @@ it('revokes token and detects it as blacklisted', function (): void {
         mfaVerified: false,
         sessionId: SessionId::generate(),
         deviceFingerprint: 'fp',
+        organizationId: '01900000-0000-7fff-8fff-ffffffffffff',
     );
 
     $decoded = $this->service->decode($token->toString());
@@ -149,6 +158,7 @@ it('rejects token with invalid signature', function (): void {
         mfaVerified: false,
         sessionId: SessionId::generate(),
         deviceFingerprint: 'fp',
+        organizationId: '01900000-0000-7fff-8fff-ffffffffffff',
     );
 
     $tamperedToken = $token->toString().'tampered';

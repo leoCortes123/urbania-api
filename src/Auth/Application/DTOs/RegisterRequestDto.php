@@ -12,6 +12,5 @@ final readonly class RegisterRequestDto
         public string $password,
         public string $passwordConfirmation,
         public ?string $phone = null,
-        public ?string $unit = null,
     ) {}
 }

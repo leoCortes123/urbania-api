@@ -37,6 +37,7 @@ class Condominium extends Model
         'total_coefficient',
         'logo_url',
         'is_active',
+        'organization_id',
     ];
 
     /**

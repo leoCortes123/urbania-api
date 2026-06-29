@@ -6,9 +6,12 @@ use App\Models\Condominium;
 use App\Models\Property;
 use App\Models\Tower;
 use App\Models\User;
+use Illuminate\Foundation\Testing\LazilyRefreshDatabase;
 use Illuminate\Support\Facades\Redis;
 use Urbania\Auth\Application\Services\JwtServiceInterface;
 use Urbania\Auth\Domain\ValueObjects\SessionId;
+
+uses(LazilyRefreshDatabase::class);
 
 function towerAdminToken(): string
 {
@@ -21,6 +24,7 @@ function towerAdminToken(): string
         mfaVerified: false,
         sessionId: SessionId::generate(),
         deviceFingerprint: '',
+        organizationId: $user->organization_id,
     )->toString();
 }
 
@@ -31,7 +35,9 @@ beforeEach(function (): void {
 it('lists towers by condominium', function (): void {
     $token = towerAdminToken();
     $condominium = Condominium::factory()->create();
-    Tower::factory()->count(3)->create(['condominium_id' => $condominium->id]);
+    Tower::factory()->create(['condominium_id' => $condominium->id, 'name' => 'Torre A']);
+    Tower::factory()->create(['condominium_id' => $condominium->id, 'name' => 'Torre B']);
+    Tower::factory()->create(['condominium_id' => $condominium->id, 'name' => 'Torre C']);
 
     $response = $this->withHeader('Authorization', "Bearer {$token}")
         ->getJson("/api/v1/condominiums/{$condominium->id}/towers");

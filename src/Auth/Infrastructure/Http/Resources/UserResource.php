@@ -26,7 +26,6 @@ final class UserResource extends JsonResource
             'name' => $dto->name,
             'email' => $dto->email,
             'phone' => $dto->phone,
-            'unit' => $dto->unit,
             'role' => $dto->role,
             'status' => $dto->status,
             'avatar_url' => $dto->avatarUrl,

@@ -21,6 +21,7 @@ function generateAccessTokenForSessions(User $user): string
         mfaVerified: false,
         sessionId: SessionId::generate(),
         deviceFingerprint: '',
+        organizationId: $user->organization_id,
     )->toString();
 }
 

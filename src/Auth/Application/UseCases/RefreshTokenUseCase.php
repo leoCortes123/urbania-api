@@ -107,6 +107,7 @@ final readonly class RefreshTokenUseCase
             mfaVerified: $mfaVerified,
             sessionId: $tokenEntity->sessionId(),
             deviceFingerprint: $tokenEntity->deviceFingerprint()?->toString() ?? '',
+            organizationId: $user?->organizationId(),
         );
 
         return new TokenResponseDto(

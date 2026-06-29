@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Urbania\Auth\Infrastructure\Persistence;
 
 use App\Models\User as UserModel;
+use Illuminate\Support\Facades\DB;
 use Urbania\Auth\Domain\Entities\UserEntity;
 use Urbania\Auth\Domain\Repositories\UserRepositoryInterface;
 use Urbania\Auth\Infrastructure\Mappers\UserMapper;
@@ -42,6 +43,8 @@ final readonly class EloquentUserRepository implements UserRepositoryInterface
     public function save(UserEntity $user): void
     {
         $data = $this->mapper->toPersistence($user);
+        $data['organization_id'] = $data['organization_id'] ?? $this->defaultOrganizationId();
+
         UserModel::create($data);
     }
 
@@ -51,6 +54,7 @@ final readonly class EloquentUserRepository implements UserRepositoryInterface
             $data = $this->mapper->toPersistencePartial($user, $user->changedFields());
         } else {
             $data = $this->mapper->toPersistence($user);
+            $data['organization_id'] = $data['organization_id'] ?? $this->defaultOrganizationId();
         }
 
         UserModel::where('id', $user->id()->toString())->update($data);
@@ -64,5 +68,22 @@ final readonly class EloquentUserRepository implements UserRepositoryInterface
     public function existsByEmail(Email $email): bool
     {
         return UserModel::where('email', $email->toString())->exists();
+    }
+
+    /**
+     * Devuelve el id de la primera organización existente.
+     * Se usa como tenant por defecto durante la transición a multi-tenancy.
+     */
+    private function defaultOrganizationId(): ?string
+    {
+        $organization = DB::table('organizations')->first();
+
+        if (! is_object($organization) || ! property_exists($organization, 'id')) {
+            return null;
+        }
+
+        $id = $organization->id;
+
+        return is_string($id) ? $id : null;
     }
 }

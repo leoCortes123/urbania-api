@@ -52,6 +52,9 @@
         "lint": "vendor/bin/pint --test",
         "fmt": "vendor/bin/pint",
         "migrate": "php artisan migrate",
+        "migrate:fresh": "php artisan migrate:fresh",
+        "migrate:rollback": "php artisan migrate:rollback",
+        "seed": "php artisan db:seed",
         "rollback": "php artisan migrate:rollback",
         "scribe": "php artisan scribe:generate",
         "ci": [

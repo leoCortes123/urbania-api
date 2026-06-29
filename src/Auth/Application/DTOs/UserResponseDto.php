@@ -11,7 +11,6 @@ final readonly class UserResponseDto
         public string $name,
         public string $email,
         public ?string $phone,
-        public ?string $unit,
         public string $role,
         public string $status,
         public ?string $avatarUrl,

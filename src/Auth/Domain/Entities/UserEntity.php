@@ -53,9 +53,9 @@ final class UserEntity
 
     private ?string $phone;
 
-    private ?string $unit;
-
     private ?string $avatarUrl;
+
+    private ?string $organizationId;
 
     /** @var list<string> */
     private array $changedFields;
@@ -84,8 +84,8 @@ final class UserEntity
         \DateTimeImmutable $updatedAt,
         ?\DateTimeImmutable $deletedAt,
         ?string $phone = null,
-        ?string $unit = null,
         ?string $avatarUrl = null,
+        ?string $organizationId = null,
     ) {
         $this->id = $id;
         $this->email = $email;
@@ -107,8 +107,8 @@ final class UserEntity
         $this->updatedAt = $updatedAt;
         $this->deletedAt = $deletedAt;
         $this->phone = $phone;
-        $this->unit = $unit;
         $this->avatarUrl = $avatarUrl;
+        $this->organizationId = $organizationId;
         $this->changedFields = [];
     }
 
@@ -118,8 +118,8 @@ final class UserEntity
         Password $password,
         UserRole $role,
         ?string $phone = null,
-        ?string $unit = null,
         ?string $avatarUrl = null,
+        ?string $organizationId = null,
     ): self {
         $now = new \DateTimeImmutable;
 
@@ -144,8 +144,8 @@ final class UserEntity
             $now,
             null,
             $phone,
-            $unit,
             $avatarUrl,
+            $organizationId,
         );
     }
 
@@ -393,14 +393,14 @@ final class UserEntity
         return $this->phone;
     }
 
-    public function unit(): ?string
-    {
-        return $this->unit;
-    }
-
     public function avatarUrl(): ?string
     {
         return $this->avatarUrl;
+    }
+
+    public function organizationId(): ?string
+    {
+        return $this->organizationId;
     }
 
     /**

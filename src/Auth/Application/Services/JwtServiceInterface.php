@@ -15,6 +15,7 @@ interface JwtServiceInterface
         bool $mfaVerified,
         SessionId $sessionId,
         string $deviceFingerprint,
+        ?string $organizationId = null,
         ?string $scope = null,
         ?int $ttl = null,
     ): JwtToken;

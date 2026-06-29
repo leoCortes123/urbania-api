@@ -6,6 +6,7 @@ namespace Database\Factories;
 
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
 /**
@@ -31,9 +32,41 @@ class UserFactory extends Factory
             'failed_login_attempts' => 0,
             'must_change_password' => false,
             'password_changed_at' => now(),
+            'organization_id' => $this->ensureDefaultOrganization(),
             'created_at' => now(),
             'updated_at' => now(),
         ];
+    }
+
+    /**
+     * Devuelve el id de la organización por defecto, creándola si no existe.
+     */
+    private function ensureDefaultOrganization(): string
+    {
+        $existing = DB::table('organizations')->first();
+
+        if ($existing !== null) {
+            return $existing->id;
+        }
+
+        $id = (string) Str::orderedUuid();
+        $now = now();
+
+        DB::table('organizations')->insert([
+            'id' => $id,
+            'name' => 'Urbania Default',
+            'type' => 'edificio_unico',
+            'nit' => '000000000-0',
+            'email' => null,
+            'country' => 'Colombia',
+            'currency' => 'COP',
+            'status' => 'activo',
+            'logo_url' => null,
+            'created_at' => $now,
+            'updated_at' => $now,
+        ]);
+
+        return $id;
     }
 
     public function admin(): static

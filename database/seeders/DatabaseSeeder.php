@@ -7,7 +7,9 @@ namespace Database\Seeders;
 use App\Models\User;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Ramsey\Uuid\Uuid;
 
 // Directorio seeders
 
@@ -25,6 +27,11 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         // ──────────────────────────────────────────────
+        // Organización por defecto (tenant único inicial)
+        // ──────────────────────────────────────────────
+        $organizationId = $this->ensureDefaultOrganization();
+
+        // ──────────────────────────────────────────────
         // Usuario administrador
         // ──────────────────────────────────────────────
         User::factory()->create([
@@ -35,6 +42,7 @@ class DatabaseSeeder extends Seeder
             'status' => 'active',
             'mfa_enabled' => false,
             'email_verified_at' => now(),
+            'organization_id' => $organizationId,
         ]);
 
         // ──────────────────────────────────────────────
@@ -48,6 +56,7 @@ class DatabaseSeeder extends Seeder
             'status' => 'active',
             'mfa_enabled' => false,
             'email_verified_at' => now(),
+            'organization_id' => $organizationId,
         ]);
 
         // ──────────────────────────────────────────────
@@ -60,6 +69,7 @@ class DatabaseSeeder extends Seeder
             'role' => 'admin',
             'status' => 'active',
             'email_verified_at' => now(),
+            'organization_id' => $organizationId,
         ]);
 
         // ──────────────────────────────────────────────
@@ -72,6 +82,7 @@ class DatabaseSeeder extends Seeder
             'role' => 'user',
             'status' => 'active',
             'email_verified_at' => now(),
+            'organization_id' => $organizationId,
         ]);
 
         $this->call([
@@ -80,6 +91,38 @@ class DatabaseSeeder extends Seeder
             PropertyStatusSeeder::class,
             PropertyDocumentTypeSeeder::class,
             DirectorioSeeder::class,
+            TenancyBootstrapSeeder::class,
         ]);
+    }
+
+    /**
+     * Crea o recupera la organización por defecto para el seed inicial.
+     */
+    private function ensureDefaultOrganization(): string
+    {
+        $existing = DB::table('organizations')->first();
+
+        if ($existing !== null) {
+            return $existing->id;
+        }
+
+        $id = Uuid::uuid7()->toString();
+        $now = now();
+
+        DB::table('organizations')->insert([
+            'id' => $id,
+            'name' => 'Urbania Default',
+            'type' => 'edificio_unico',
+            'nit' => '000000000-0',
+            'email' => null,
+            'country' => 'Colombia',
+            'currency' => 'COP',
+            'status' => 'activo',
+            'logo_url' => null,
+            'created_at' => $now,
+            'updated_at' => $now,
+        ]);
+
+        return $id;
     }
 }

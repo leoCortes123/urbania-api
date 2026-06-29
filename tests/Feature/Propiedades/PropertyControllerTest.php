@@ -8,6 +8,8 @@ use App\Models\PropertyStatus;
 use App\Models\PropertyType;
 use App\Models\Tower;
 use App\Models\User;
+use Database\Seeders\PropertyStatusSeeder;
+use Database\Seeders\PropertyTypeSeeder;
 use Illuminate\Support\Facades\Redis;
 use Urbania\Auth\Application\Services\JwtServiceInterface;
 use Urbania\Auth\Domain\ValueObjects\SessionId;
@@ -23,14 +25,15 @@ function propertyAdminToken(): string
         mfaVerified: false,
         sessionId: SessionId::generate(),
         deviceFingerprint: '',
+        organizationId: $user->organization_id,
     )->toString();
 }
 
 beforeEach(function (): void {
     Redis::flushall();
     $this->seed([
-        \Database\Seeders\PropertyTypeSeeder::class,
-        \Database\Seeders\PropertyStatusSeeder::class,
+        PropertyTypeSeeder::class,
+        PropertyStatusSeeder::class,
     ]);
 });
 

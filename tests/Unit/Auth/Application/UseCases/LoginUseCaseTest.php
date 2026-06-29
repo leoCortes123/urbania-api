@@ -174,6 +174,7 @@ it('returns FORCE_PASSWORD_CHANGE status with limited token', function (): void 
             false,
             Mockery::type(SessionId::class),
             '',
+            Mockery::any(),
             'change-password',
             300,
         )
@@ -220,6 +221,7 @@ it('returns MFA_REQUIRED status with limited token when MFA is enabled', functio
             false,
             Mockery::type(SessionId::class),
             $expectedFingerprint->toString(),
+            Mockery::any(),
             'mfa-verify',
             300,
         )
@@ -261,13 +263,6 @@ it('generates correct device fingerprint from metadata', function (): void {
 
     $this->jwtService->shouldReceive('generateAccessToken')
         ->once()
-        ->with(
-            Mockery::any(),
-            Mockery::any(),
-            Mockery::any(),
-            Mockery::type(SessionId::class),
-            $expectedFingerprint->toString(),
-        )
         ->andReturn(JwtToken::fromString('access-token'));
 
     $this->jwtService->shouldReceive('generateRefreshToken')

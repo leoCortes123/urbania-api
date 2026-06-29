@@ -42,6 +42,7 @@ final readonly class PhpOpenSourceSaverJwtService implements JwtServiceInterface
         'mfa_verified',
         'session_id',
         'device_fp',
+        'org_id',
     ];
 
     private Configuration $config;
@@ -71,6 +72,7 @@ final readonly class PhpOpenSourceSaverJwtService implements JwtServiceInterface
         bool $mfaVerified,
         SessionId $sessionId,
         string $deviceFingerprint,
+        ?string $organizationId = null,
         ?string $scope = null,
         ?int $ttl = null,
     ): JwtToken {
@@ -95,7 +97,8 @@ final readonly class PhpOpenSourceSaverJwtService implements JwtServiceInterface
             ->withClaim('role', $role)
             ->withClaim('mfa_verified', $mfaVerified)
             ->withClaim('session_id', $sessionId->toString())
-            ->withClaim('device_fp', $deviceFingerprint);
+            ->withClaim('device_fp', $deviceFingerprint)
+            ->withClaim('org_id', $organizationId ?? '');
 
         if ($scope !== null && $scope !== '') {
             $builder = $builder->withClaim('scope', $scope);

@@ -169,11 +169,9 @@ it('preserves optional profile fields from creation', function (): void {
         Password::fromPlainText('SecureP@ss123'),
         UserRole::USER,
         phone: '3001234567',
-        unit: 'Apto 101',
         avatarUrl: 'https://urbania.example.com/avatar.jpg',
     );
 
     expect($user->phone())->toBe('3001234567')
-        ->and($user->unit())->toBe('Apto 101')
         ->and($user->avatarUrl())->toBe('https://urbania.example.com/avatar.jpg');
 });

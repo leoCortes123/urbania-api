@@ -24,7 +24,6 @@ final class RegisterRequest extends FormRequest
             'password' => ['required', 'string', 'min:8', 'max:128', 'confirmed'],
             'password_confirmation' => ['required', 'string', 'same:password'],
             'phone' => ['nullable', 'string', 'max:20', 'regex:/^[0-9+\-()\s]+$/'],
-            'unit' => ['nullable', 'string', 'max:50'],
         ];
     }
 

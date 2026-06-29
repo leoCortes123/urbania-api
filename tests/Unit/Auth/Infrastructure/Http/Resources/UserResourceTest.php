@@ -12,7 +12,6 @@ it('formats user response with all fields including nulls', function (): void {
         name: 'Juan Perez',
         email: 'juan@example.com',
         phone: null,
-        unit: null,
         role: 'user',
         status: 'active',
         avatarUrl: null,
@@ -27,7 +26,6 @@ it('formats user response with all fields including nulls', function (): void {
         'name' => 'Juan Perez',
         'email' => 'juan@example.com',
         'phone' => null,
-        'unit' => null,
         'role' => 'user',
         'status' => 'active',
         'avatar_url' => null,
@@ -41,7 +39,6 @@ it('formats user response with optional fields populated', function (): void {
         name: 'Maria Lopez',
         email: 'maria@example.com',
         phone: '3001234567',
-        unit: 'Apto 205',
         role: 'admin',
         status: 'active',
         avatarUrl: 'https://api.urbania.com/avatars/1.jpg',
@@ -53,7 +50,6 @@ it('formats user response with optional fields populated', function (): void {
 
     expect($data)->toMatchArray([
         'phone' => '3001234567',
-        'unit' => 'Apto 205',
         'avatar_url' => 'https://api.urbania.com/avatars/1.jpg',
     ]);
 });

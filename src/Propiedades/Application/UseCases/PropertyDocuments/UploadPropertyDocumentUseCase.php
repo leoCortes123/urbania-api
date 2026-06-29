@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Urbania\Propiedades\Application\UseCases\PropertyDocuments;
 
 use Illuminate\Http\UploadedFile;
-use Illuminate\Support\Facades\Storage;
 use Urbania\Propiedades\Application\DTOs\PropertyDocumentResponseDto;
 use Urbania\Propiedades\Application\DTOs\UploadPropertyDocumentRequestDto;
 use Urbania\Propiedades\Domain\Entities\PropertyDocumentEntity;

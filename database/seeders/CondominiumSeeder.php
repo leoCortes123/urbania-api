@@ -7,6 +7,7 @@ namespace Database\Seeders;
 use App\Models\Condominium;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
 
 class CondominiumSeeder extends Seeder
 {
@@ -17,6 +18,9 @@ class CondominiumSeeder extends Seeder
      */
     public function run(): void
     {
+        $organization = DB::table('organizations')->first();
+        $organizationId = $organization?->id;
+
         Condominium::firstOrCreate(
             ['nit' => '900.000.000-1'],
             [
@@ -31,6 +35,7 @@ class CondominiumSeeder extends Seeder
                 'total_coefficient' => '1.000000',
                 'logo_url' => null,
                 'is_active' => true,
+                'organization_id' => $organizationId,
             ]
         );
     }

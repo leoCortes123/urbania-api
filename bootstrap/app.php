@@ -17,10 +17,12 @@ use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Urbania\Auth\Infrastructure\Http\Middleware\JwtAuthenticate;
+use Urbania\Propiedades\Domain\Exceptions\PropertyHasDependenciesException;
 use Urbania\Shared\Domain\Exceptions\DomainException;
 use Urbania\Shared\Infrastructure\Middleware\CorsMiddleware;
 use Urbania\Shared\Infrastructure\Middleware\RequestLoggingMiddleware;
 use Urbania\Shared\Infrastructure\Middleware\SecurityHeadersMiddleware;
+use Urbania\Shared\Infrastructure\Middleware\TenantMiddleware;
 use Urbania\Shared\Infrastructure\Middleware\TraceIdMiddleware;
 
 return Application::configure(basePath: dirname(__DIR__))
@@ -40,6 +42,7 @@ return Application::configure(basePath: dirname(__DIR__))
 
         $middleware->appendToGroup('api', [
             SecurityHeadersMiddleware::class,
+            TenantMiddleware::class,
         ]);
 
         $middleware->remove(HandleCors::class);
@@ -71,7 +74,7 @@ return Application::configure(basePath: dirname(__DIR__))
                         ],
                     ];
 
-                    if ($e instanceof \Urbania\Propiedades\Domain\Exceptions\PropertyHasDependenciesException) {
+                    if ($e instanceof PropertyHasDependenciesException) {
                         $payload['error']['details'] = $e->details;
                     }
 

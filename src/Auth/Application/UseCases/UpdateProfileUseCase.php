@@ -40,7 +40,6 @@ final readonly class UpdateProfileUseCase
             name: $user->name(),
             email: $user->email()->toString(),
             phone: $user->phone(),
-            unit: $user->unit(),
             role: $user->role()->value,
             status: $user->status()->value,
             avatarUrl: $user->avatarUrl(),

@@ -42,6 +42,7 @@ final readonly class ResendVerificationUseCase
             mfaVerified: false,
             sessionId: SessionId::generate(),
             deviceFingerprint: '',
+            organizationId: $user->organizationId(),
             scope: 'email-verification',
             ttl: 3600,
         );

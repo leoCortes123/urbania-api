@@ -25,7 +25,6 @@ class User extends Authenticatable
         'email',
         'name',
         'phone',
-        'unit',
         'avatar_url',
         'password_hash',
         'email_verified_at',
@@ -40,6 +39,7 @@ class User extends Authenticatable
         'must_change_password',
         'role',
         'status',
+        'organization_id',
     ];
 
     /** @var list<string> */

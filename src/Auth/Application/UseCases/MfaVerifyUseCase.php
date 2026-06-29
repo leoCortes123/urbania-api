@@ -86,6 +86,7 @@ final readonly class MfaVerifyUseCase
             mfaVerified: true,
             sessionId: $sessionId,
             deviceFingerprint: $deviceFp->toString(),
+            organizationId: $user->organizationId(),
         );
 
         $refreshTokenRaw = $this->jwtService->generateRefreshToken();
@@ -131,8 +132,7 @@ final readonly class MfaVerifyUseCase
             id: $user->id()->toString(),
             name: $user->name(),
             email: $user->email()->toString(),
-            phone: null,
-            unit: null,
+            phone: $user->phone(),
             role: $user->role()->value,
             status: $user->status()->value,
             avatarUrl: null,

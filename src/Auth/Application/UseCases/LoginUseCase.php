@@ -56,6 +56,7 @@ final readonly class LoginUseCase
                 mfaVerified: false,
                 sessionId: SessionId::generate(),
                 deviceFingerprint: '',
+                organizationId: $user->organizationId(),
                 scope: 'change-password',
                 ttl: 300,
             );
@@ -86,6 +87,7 @@ final readonly class LoginUseCase
                 mfaVerified: false,
                 sessionId: $tempSessionId,
                 deviceFingerprint: $deviceFp->toString(),
+                organizationId: $user->organizationId(),
                 scope: 'mfa-verify',
                 ttl: 300,
             );
@@ -119,6 +121,7 @@ final readonly class LoginUseCase
             mfaVerified: false,
             sessionId: $sessionId,
             deviceFingerprint: $deviceFp->toString(),
+            organizationId: $user->organizationId(),
         );
 
         $refreshTokenRaw = $this->jwtService->generateRefreshToken();
@@ -169,7 +172,6 @@ final readonly class LoginUseCase
             name: $user->name(),
             email: $user->email()->toString(),
             phone: $user->phone(),
-            unit: $user->unit(),
             role: $user->role()->value,
             status: $user->status()->value,
             avatarUrl: $user->avatarUrl(),
