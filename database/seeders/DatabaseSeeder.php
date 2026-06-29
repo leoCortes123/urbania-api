@@ -92,6 +92,9 @@ class DatabaseSeeder extends Seeder
             PropertyDocumentTypeSeeder::class,
             DirectorioSeeder::class,
             TenancyBootstrapSeeder::class,
+            RbacPermissionSeeder::class,
+            RbacRoleSeeder::class,
+            RbacMigrationSeeder::class,
         ]);
     }
 
