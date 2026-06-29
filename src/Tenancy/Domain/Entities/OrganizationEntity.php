@@ -18,21 +18,48 @@ final readonly class OrganizationEntity
         private string $status = 'trial',
     ) {}
 
-    public function id(): Uuid { return $this->id; }
+    public function id(): Uuid
+    {
+        return $this->id;
+    }
 
-    public function name(): string { return $this->name; }
+    public function name(): string
+    {
+        return $this->name;
+    }
 
-    public function type(): string { return $this->type; }
+    public function type(): string
+    {
+        return $this->type;
+    }
 
-    public function nit(): ?string { return $this->nit; }
+    public function nit(): ?string
+    {
+        return $this->nit;
+    }
 
-    public function country(): string { return $this->country; }
+    public function country(): string
+    {
+        return $this->country;
+    }
 
-    public function currency(): string { return $this->currency; }
+    public function currency(): string
+    {
+        return $this->currency;
+    }
 
-    public function status(): string { return $this->status; }
+    public function status(): string
+    {
+        return $this->status;
+    }
 
-    public function isActive(): bool { return $this->status === 'activo'; }
+    public function isActive(): bool
+    {
+        return $this->status === 'activo';
+    }
 
-    public function isTrial(): bool { return $this->status === 'trial'; }
+    public function isTrial(): bool
+    {
+        return $this->status === 'trial';
+    }
 }
