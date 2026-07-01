@@ -86,3 +86,51 @@ it('denies permission for user without role assignment', function (): void {
 
     expect($can)->toBeFalse();
 });
+
+it('resolves permissions for a resident user', function (): void {
+    $organization = Organization::factory()->create();
+    $user = User::factory()->create(['organization_id' => $organization->id]);
+
+    $residentRole = Role::where('code', 'residente')->firstOrFail();
+    RoleAssignment::create([
+        'user_id' => $user->id,
+        'role_id' => $residentRole->id,
+        'scope_type' => 'organization',
+        'scope_id' => $organization->id,
+    ]);
+
+    $resolver = app(PermissionResolverInterface::class);
+    $permissions = $resolver->resolvePermissions(
+        Uuid::fromString($user->id),
+        'organization',
+        Uuid::fromString($organization->id)
+    );
+
+    expect($permissions)->toContain('comunicaciones.ver')
+        ->and($permissions)->toContain('reservas.crear');
+});
+
+it('denies permission that the role does not have', function (): void {
+    $organization = Organization::factory()->create();
+    $user = User::factory()->create(['organization_id' => $organization->id]);
+
+    $adminRole = Role::where('code', 'admin')->firstOrFail();
+    RoleAssignment::create([
+        'user_id' => $user->id,
+        'role_id' => $adminRole->id,
+        'scope_type' => 'organization',
+        'scope_id' => $organization->id,
+    ]);
+
+    $resolver = app(PermissionResolverInterface::class);
+
+    $can = $resolver->can(
+        Uuid::fromString($user->id),
+        'cobranza',
+        'generar',
+        'organization',
+        Uuid::fromString($organization->id)
+    );
+
+    expect($can)->toBeFalse();
+});

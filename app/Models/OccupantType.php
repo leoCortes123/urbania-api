@@ -4,12 +4,15 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use Database\Factories\OccupantTypeFactory;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class OccupantType extends Model
 {
-    use HasUuids;
+    /** @use HasFactory<OccupantTypeFactory> */
+    use HasFactory, HasUuids;
 
     protected $table = 'occupant_types';
 

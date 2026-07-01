@@ -24,6 +24,7 @@ class ContactMapper
             emergencyContactPhone: $model->emergency_contact_phone,
             notes: $model->notes,
             userId: $model->user_id,
+            organizationId: $model->organization_id,
             createdAt: $model->created_at?->toISOString(),
             updatedAt: $model->updated_at?->toISOString(),
             deletedAt: $model->deleted_at?->toISOString(),
@@ -53,6 +54,7 @@ class ContactMapper
             'emergency_contact_name' => $contact->emergencyContactName(),
             'emergency_contact_phone' => $contact->emergencyContactPhone(),
             'notes' => $contact->notes(),
+            'organization_id' => $contact->organizationId(),
         ];
     }
 }

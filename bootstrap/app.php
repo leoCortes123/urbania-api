@@ -38,11 +38,11 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->prependToGroup('api', [
             TraceIdMiddleware::class,
             RequestLoggingMiddleware::class,
+            TenantMiddleware::class,
         ]);
 
         $middleware->appendToGroup('api', [
             SecurityHeadersMiddleware::class,
-            TenantMiddleware::class,
         ]);
 
         $middleware->remove(HandleCors::class);

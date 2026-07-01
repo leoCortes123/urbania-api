@@ -19,7 +19,7 @@ readonly class UpdateOccupantUseCase
     {
         $occupant = $this->occupantRepository->findById($id);
         if ($occupant === null) {
-            throw new OccupantNotFoundException($id);
+            throw new OccupantNotFoundException;
         }
 
         $updated = new PropertyOccupant(

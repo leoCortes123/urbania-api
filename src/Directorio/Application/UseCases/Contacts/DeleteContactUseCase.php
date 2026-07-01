@@ -20,13 +20,13 @@ readonly class DeleteContactUseCase
     {
         $contact = $this->contactRepository->findById($id);
         if ($contact === null) {
-            throw new ContactNotFoundException($id);
+            throw new ContactNotFoundException;
         }
 
         // Validar que no tenga vínculos activos
         $activeOccupants = $this->occupantRepository->findActiveByContact($id);
         if (! empty($activeOccupants)) {
-            throw new ContactHasActiveOccupantsException($id);
+            throw new ContactHasActiveOccupantsException;
         }
 
         $this->contactRepository->delete($id);

@@ -4,14 +4,17 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use Database\Factories\PropertyOccupantFactory;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class PropertyOccupant extends Model
 {
-    use HasUuids, SoftDeletes;
+    /** @use HasFactory<PropertyOccupantFactory> */
+    use HasFactory, HasUuids, SoftDeletes;
 
     protected $table = 'property_occupants';
 

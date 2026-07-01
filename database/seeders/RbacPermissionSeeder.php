@@ -52,6 +52,7 @@ class RbacPermissionSeeder extends Seeder
             ['comunicaciones', 'ver', 'Ver comunicados'],
             ['comunicaciones', 'crear', 'Redactar comunicados'],
             ['comunicaciones', 'encuestas', 'Gestionar encuestas'],
+            ['comunicaciones', 'configurar', 'Configurar canales de comunicación'],
 
             // Reservas
             ['reservas', 'ver', 'Ver reservas'],
@@ -80,6 +81,16 @@ class RbacPermissionSeeder extends Seeder
             ['tenant', 'ver', 'Ver organización'],
             ['tenant', 'editar', 'Editar organización'],
             ['tenant', 'usuarios', 'Gestionar usuarios de la org'],
+
+            // Roles y usuarios del panel
+            ['roles', 'ver', 'Ver roles'],
+            ['roles', 'crear', 'Crear roles'],
+            ['roles', 'editar', 'Editar roles'],
+            ['roles', 'eliminar', 'Eliminar roles'],
+            ['roles', 'asignar', 'Asignar roles a usuarios'],
+            ['roles', 'configurar', 'Configurar reglas de aprobación'],
+            ['usuarios', 'ver', 'Ver usuarios del panel'],
+            ['usuarios', 'invitar', 'Invitar usuarios al panel'],
         ];
 
         $now = now();

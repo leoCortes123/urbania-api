@@ -23,7 +23,7 @@ readonly class CreateContactUseCase
         // Validar que no exista un contacto con el mismo documento
         $existing = $this->contactRepository->findByDocument($dto->documentType, $dto->documentNumber);
         if ($existing !== null && ! $existing->isDeleted()) {
-            throw new DuplicateContactDocumentException($dto->documentType, $dto->documentNumber);
+            throw new DuplicateContactDocumentException;
         }
 
         $contact = new Contact(
@@ -37,6 +37,7 @@ readonly class CreateContactUseCase
             emergencyContactPhone: $dto->emergencyContactPhone,
             notes: $dto->notes,
             userId: $dto->userId,
+            organizationId: $dto->organizationId,
         );
 
         return $this->contactRepository->save($contact);

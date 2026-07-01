@@ -4,13 +4,12 @@ declare(strict_types=1);
 
 namespace Directorio\Domain\Exceptions;
 
-class ContactHasActiveOccupantsException extends \DomainException
+use Urbania\Shared\Domain\Exceptions\DomainException;
+
+final class ContactHasActiveOccupantsException extends DomainException
 {
-    public function __construct(string $contactId)
+    public function __construct(string $message = 'El contacto tiene vínculos activos y no puede eliminarse')
     {
-        parent::__construct(
-            "El contacto {$contactId} tiene vínculos activos como propietario y no puede eliminarse",
-            409
-        );
+        parent::__construct('CONTACT_HAS_ACTIVE_OCCUPANTS', $message, 409);
     }
 }

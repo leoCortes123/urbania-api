@@ -26,8 +26,10 @@ class AppServiceProvider extends ServiceProvider
     {
         RateLimiter::for('login', function (Request $request): Limit {
             $key = $request->string('email')->value().'|'.$request->ip();
-            $maxAttempts = (int) env('RATE_LIMIT_LOGIN_MAX_ATTEMPTS', 5);
-            $decayMinutes = (int) env('RATE_LIMIT_LOGIN_DECAY_MINUTES', 15);
+            /** @var int $maxAttempts */
+            $maxAttempts = config('rate-limiting.login.max_attempts', 5);
+            /** @var int $decayMinutes */
+            $decayMinutes = config('rate-limiting.login.decay_minutes', 15);
 
             return Limit::perMinutes($decayMinutes, $maxAttempts)->by($key);
         });
@@ -37,16 +39,20 @@ class AppServiceProvider extends ServiceProvider
         });
 
         RateLimiter::for('refresh', function (Request $request): Limit {
-            $maxAttempts = (int) env('RATE_LIMIT_REFRESH_MAX_ATTEMPTS', 10);
-            $decayMinutes = (int) env('RATE_LIMIT_REFRESH_DECAY_MINUTES', 15);
+            /** @var int $maxAttempts */
+            $maxAttempts = config('rate-limiting.refresh.max_attempts', 10);
+            /** @var int $decayMinutes */
+            $decayMinutes = config('rate-limiting.refresh.decay_minutes', 15);
 
             return Limit::perMinutes($decayMinutes, $maxAttempts)->by($request->ip());
         });
 
         RateLimiter::for('api', function (Request $request): Limit {
             $key = $request->user() !== null ? $request->user()->id : $request->ip();
-            $maxAttempts = (int) env('RATE_LIMIT_API_MAX_ATTEMPTS', 1000);
-            $decayMinutes = (int) env('RATE_LIMIT_API_DECAY_MINUTES', 1);
+            /** @var int $maxAttempts */
+            $maxAttempts = config('rate-limiting.api.max_attempts', 1000);
+            /** @var int $decayMinutes */
+            $decayMinutes = config('rate-limiting.api.decay_minutes', 1);
 
             return Limit::perMinutes($decayMinutes, $maxAttempts)->by((string) $key);
         });

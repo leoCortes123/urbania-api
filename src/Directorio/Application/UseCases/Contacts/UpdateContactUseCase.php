@@ -22,7 +22,7 @@ readonly class UpdateContactUseCase
     {
         $contact = $this->contactRepository->findById($id);
         if ($contact === null) {
-            throw new ContactNotFoundException($id);
+            throw new ContactNotFoundException;
         }
 
         $documentType = $dto->documentType ?? $contact->documentType()->value();
@@ -32,7 +32,7 @@ readonly class UpdateContactUseCase
         if ($dto->documentType !== null || $dto->documentNumber !== null) {
             $existing = $this->contactRepository->findByDocument($documentType, $documentNumber);
             if ($existing !== null && $existing->id() !== $id && ! $existing->isDeleted()) {
-                throw new DuplicateContactDocumentException($documentType, $documentNumber);
+                throw new DuplicateContactDocumentException;
             }
         }
 
@@ -47,6 +47,7 @@ readonly class UpdateContactUseCase
             emergencyContactPhone: $dto->emergencyContactPhone ?? $contact->emergencyContactPhone(),
             notes: $dto->notes ?? $contact->notes(),
             userId: $dto->userId ?? $contact->userId(),
+            organizationId: $dto->organizationId ?? $contact->organizationId(),
         );
 
         return $this->contactRepository->update($updated);

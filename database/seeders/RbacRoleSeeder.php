@@ -59,6 +59,8 @@ class RbacRoleSeeder extends Seeder
                     'reportes.*',
                     'configuracion.*',
                     'tenant.ver', 'tenant.editar', 'tenant.usuarios',
+                    'roles.*',
+                    'usuarios.*',
                 ],
             ],
 

@@ -100,6 +100,7 @@ class ContactController extends Controller
             emergencyContactPhone: self::nullableString($request->input('emergency_contact_phone')),
             notes: self::nullableString($request->input('notes')),
             userId: self::nullableString($request->input('user_id')),
+            organizationId: self::nullableString($request->attributes->get('org_id')),
         );
 
         $contact = $this->createContactUseCase->execute($dto);
@@ -122,6 +123,7 @@ class ContactController extends Controller
             emergencyContactPhone: self::nullableString($request->input('emergency_contact_phone')),
             notes: self::nullableString($request->input('notes')),
             userId: self::nullableString($request->input('user_id')),
+            organizationId: self::nullableString($request->attributes->get('org_id')),
         );
 
         $this->updateContactUseCase->execute($id, $dto);

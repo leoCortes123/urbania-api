@@ -7,7 +7,7 @@ use Directorio\Infrastructure\Http\Controllers\OccupantTypeController;
 use Directorio\Infrastructure\Http\Controllers\PropertyOccupantController;
 use Illuminate\Support\Facades\Route;
 
-Route::middleware(['urbania.jwt'])->prefix('api/v1')->group(function () {
+Route::middleware(['api', 'urbania.jwt'])->prefix('api/v1')->group(function () {
     // Catálogos
     Route::get('occupant-types', [OccupantTypeController::class, 'index']);
 

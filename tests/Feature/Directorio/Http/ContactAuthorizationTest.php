@@ -31,7 +31,7 @@ beforeEach(function (): void {
 it('returns 401 for contacts without token', function (): void {
     $this->getJson('/api/v1/contacts')
         ->assertUnauthorized()
-        ->assertJsonPath('error.code', 'TOKEN_INVALID');
+        ->assertJsonPath('error.code', 'TENANT_REQUIRED');
 });
 
 it('returns 403 for contacts with user role token', function (): void {

@@ -20,6 +20,7 @@ class Contact
         private readonly ?string $emergencyContactPhone = null,
         private readonly ?string $notes = null,
         private readonly ?string $userId = null,
+        private readonly ?string $organizationId = null,
         private readonly ?string $createdAt = null,
         private readonly ?string $updatedAt = null,
         private readonly ?string $deletedAt = null,
@@ -77,6 +78,11 @@ class Contact
     public function userId(): ?string
     {
         return $this->userId;
+    }
+
+    public function organizationId(): ?string
+    {
+        return $this->organizationId;
     }
 
     public function createdAt(): ?string

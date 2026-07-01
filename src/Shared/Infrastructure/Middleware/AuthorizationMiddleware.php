@@ -22,6 +22,16 @@ final class AuthorizationMiddleware
         'directorio.store' => ['resource' => 'directorio', 'action' => 'crear'],
         'directorio.update' => ['resource' => 'directorio', 'action' => 'editar'],
         'directorio.destroy' => ['resource' => 'directorio', 'action' => 'eliminar'],
+        'roles.index' => ['resource' => 'roles', 'action' => 'ver'],
+        'roles.store' => ['resource' => 'roles', 'action' => 'crear'],
+        'roles.update' => ['resource' => 'roles', 'action' => 'editar'],
+        'roles.setPermissions' => ['resource' => 'roles', 'action' => 'editar'],
+        'roles.destroy' => ['resource' => 'roles', 'action' => 'eliminar'],
+        'permissions.index' => ['resource' => 'roles', 'action' => 'ver'],
+        'assignments.store' => ['resource' => 'roles', 'action' => 'asignar'],
+        'assignments.destroy' => ['resource' => 'roles', 'action' => 'asignar'],
+        'approval-rules.store' => ['resource' => 'roles', 'action' => 'configurar'],
+        'audit.index' => ['resource' => 'roles', 'action' => 'ver'],
     ];
 
     public function __construct(
@@ -41,9 +51,20 @@ final class AuthorizationMiddleware
         }
 
         $permission = self::ROUTE_PERMISSION_MAP[$routeName];
+
         $user = $request->user();
 
-        if ($user === null) {
+        if ($user !== null) {
+            /** @var string $userIdRaw */
+            $userIdRaw = $user->id;
+            /** @var string|null $organizationIdRaw */
+            $organizationIdRaw = $user->organization_id;
+        } else {
+            $userIdRaw = $request->attributes->get('auth_user_id');
+            $organizationIdRaw = $request->attributes->get('org_id');
+        }
+
+        if (! is_string($userIdRaw) || $userIdRaw === '') {
             return response()->json([
                 'error' => [
                     'code' => 'UNAUTHORIZED',
@@ -53,13 +74,9 @@ final class AuthorizationMiddleware
             ], 401);
         }
 
-        /** @var string $userIdRaw */
-        $userIdRaw = $user->id;
         $userId = Uuid::fromString($userIdRaw);
 
-        /** @var string|null $organizationIdRaw */
-        $organizationIdRaw = $user->organization_id;
-        if ($organizationIdRaw === null || $organizationIdRaw === '') {
+        if (! is_string($organizationIdRaw) || $organizationIdRaw === '') {
             return response()->json([
                 'error' => [
                     'code' => 'FORBIDDEN',

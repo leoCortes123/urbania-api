@@ -16,5 +16,6 @@ final readonly class UpdateContactDTO
         public ?string $emergencyContactPhone = null,
         public ?string $notes = null,
         public ?string $userId = null,
+        public ?string $organizationId = null,
     ) {}
 }

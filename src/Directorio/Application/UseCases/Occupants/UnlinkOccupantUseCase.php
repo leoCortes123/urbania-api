@@ -20,7 +20,7 @@ readonly class UnlinkOccupantUseCase
     {
         $occupant = $this->occupantRepository->findById($id);
         if ($occupant === null) {
-            throw new OccupantNotFoundException($id);
+            throw new OccupantNotFoundException;
         }
 
         // Si es propietario, validar que quede al menos otro propietario en la unidad
@@ -28,7 +28,7 @@ readonly class UnlinkOccupantUseCase
         if ($ownerType !== null && $occupant->occupantTypeId() === $ownerType->id()) {
             $activeOwners = $this->occupantRepository->countActiveOwnersByProperty($occupant->propertyId());
             if ($activeOwners <= 1) {
-                throw new MustHaveOwnerException($occupant->propertyId());
+                throw new MustHaveOwnerException;
             }
         }
 
