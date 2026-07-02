@@ -20,7 +20,19 @@ class DatabaseSeeder extends Seeder
     /**
      * Seed the application's database.
      *
-     * Crea los usuarios de prueba necesarios para desarrollo y testing.
+     * Orquesta todos los seeders del sistema en orden:
+     * 1. Bootstrap: organización por defecto + usuarios de prueba + catálogos
+     * 2. Catálogos: tipos de propiedad, estados, tipos de documento, tipos de ocupante
+     * 3. Tenancy: asigna organización a registros huérfanos
+     * 4. RBAC: permisos, roles, migración de roles legacy
+     * 5. DemoData: datos de demostración para features 1-6
+     *
+     * ═══════════════════════════════════════════════════
+     * ⚡ AL AGREGAR UN NUEVO FEATURE:
+     *   1. Crear su seeder de datos demo en DemoDataSeeder
+     *   2. No tocar este archivo a menos que el feature requiera bootstrap adicional
+     * ═══════════════════════════════════════════════════
+     *
      * Las credenciales coinciden con las definidas en WEB/.env.test
      * y WEB/.env.example para pruebas de integración Web → API.
      */
@@ -95,6 +107,7 @@ class DatabaseSeeder extends Seeder
             RbacPermissionSeeder::class,
             RbacRoleSeeder::class,
             RbacMigrationSeeder::class,
+            DemoDataSeeder::class,
         ]);
     }
 

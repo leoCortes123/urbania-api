@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Urbania\Propiedades\Infrastructure\Http\Controllers;
 
+use App\Models\Condominium;
+use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Routing\Controller;
 use Urbania\Propiedades\Application\DTOs\UpdateCondominiumRequestDto;
@@ -18,6 +20,45 @@ use Urbania\Propiedades\Infrastructure\Http\Resources\CondominiumResource;
 
 final class CondominiumController extends Controller
 {
+    public function me(ListCondominiumsRequest $request, GetCondominiumUseCase $useCase): JsonResponse
+    {
+        /** @var string|null $userId */
+        $userId = $request->attributes->get('auth_user_id');
+
+        if (! $userId) {
+            return response()->json([
+                'error' => ['code' => 'USER_NOT_FOUND', 'message' => 'Usuario no autenticado'],
+            ], 401);
+        }
+
+        $user = User::find($userId);
+
+        if (! $user || ! $user->organization_id) {
+            return response()->json([
+                'error' => ['code' => 'NO_ORGANIZATION', 'message' => 'El usuario no tiene organización asignada'],
+            ], 404);
+        }
+
+        /** @var Condominium|null $condominium */
+        $condominium = Condominium::where('organization_id', $user->organization_id)
+            ->where('is_active', true)
+            ->first();
+
+        if (! $condominium) {
+            return response()->json([
+                'error' => ['code' => 'CONDOMINIUM_NOT_FOUND', 'message' => 'No se encontró un condominio para este usuario'],
+            ], 404);
+        }
+
+        $result = $useCase->execute($condominium->id);
+        $resource = new CondominiumResource($result);
+
+        return response()->json([
+            'data' => $resource->resolve($request),
+            'meta' => ['trace_id' => $request->attributes->get('trace_id')],
+        ]);
+    }
+
     public function index(ListCondominiumsRequest $request, ListCondominiumsUseCase $useCase): JsonResponse
     {
         /** @var array<string, mixed> $validated */

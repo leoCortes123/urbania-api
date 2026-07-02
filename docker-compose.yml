@@ -5,10 +5,14 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+      target: ${DOCKER_TARGET:-production}
     container_name: urbania-api-app
     restart: unless-stopped
+    env_file:
+      - .env.docker
     volumes:
       - .:/var/www
+      - ./docker-www.conf:/usr/local/etc/php-fpm.d/www.conf:ro
     networks:
       - urbania-network
     depends_on:
@@ -16,10 +20,6 @@ services:
         condition: service_healthy
       redis:
         condition: service_started
-    environment:
-      - APP_ENV=local
-      - APP_DEBUG=true
-      - OPENSSL_CONF=/etc/ssl/openssl.cnf
     entrypoint: ["/bin/sh", "/var/www/docker-entrypoint.sh"]
 
   nginx:
@@ -47,7 +47,7 @@ services:
       POSTGRES_USER: urbania
       POSTGRES_PASSWORD: urbania_secret
     volumes:
-      - pgdata:/var/lib/postgresql
+      - pgdata:/var/lib/postgresql/data
     networks:
       - urbania-network
     healthcheck:

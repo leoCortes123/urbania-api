@@ -25,6 +25,7 @@ Route::middleware(['api', 'urbania.jwt', 'role:admin'])
         Route::delete('/property-statuses/{id}', [PropertyStatusController::class, 'destroy']);
 
         Route::get('/condominiums', [CondominiumController::class, 'index']);
+        Route::get('/condominiums/me', [CondominiumController::class, 'me']);
         Route::get('/condominiums/{id}', [CondominiumController::class, 'show']);
         Route::patch('/condominiums/{id}', [CondominiumController::class, 'update']);
         Route::get('/condominiums/{id}/coefficient-validation', [CondominiumController::class, 'coefficientValidation']);
