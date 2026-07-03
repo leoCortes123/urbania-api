@@ -91,6 +91,9 @@ class RbacPermissionSeeder extends Seeder
             ['roles', 'configurar', 'Configurar reglas de aprobación'],
             ['usuarios', 'ver', 'Ver usuarios del panel'],
             ['usuarios', 'invitar', 'Invitar usuarios al panel'],
+
+            // Admin / Operador SaaS
+            ['admin', 'impersonate', 'Suplantar sesión de usuario'],
         ];
 
         $now = now();

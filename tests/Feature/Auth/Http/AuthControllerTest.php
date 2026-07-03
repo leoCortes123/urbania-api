@@ -129,6 +129,18 @@ it('returns 401 mfa required when mfa is enabled', function (): void {
         ->assertJsonPath('error.code', 'MFA_REQUIRED');
 });
 
+it('returns 403 when registering without invitation token', function (): void {
+    $response = $this->postJson('/api/v1/auth/register', [
+        'name' => 'Juan Perez',
+        'email' => 'register@example.com',
+        'password' => 'Password123!',
+        'password_confirmation' => 'Password123!',
+    ]);
+
+    $response->assertForbidden()
+        ->assertJsonPath('error.code', 'PUBLIC_REGISTRATION_DISABLED');
+});
+
 it('registers a new user and returns user data with message', function (): void {
     $response = $this->postJson('/api/v1/auth/register', [
         'name' => 'Juan Perez',
@@ -136,6 +148,7 @@ it('registers a new user and returns user data with message', function (): void 
         'password' => 'Password123!',
         'password_confirmation' => 'Password123!',
         'phone' => '3001234567',
+        'invitation_token' => 'test-valid-token',
     ]);
 
     $response->assertCreated()
@@ -164,6 +177,7 @@ it('returns 409 when email already exists on register', function (): void {
         'email' => 'exists@example.com',
         'password' => 'Password123!',
         'password_confirmation' => 'Password123!',
+        'invitation_token' => 'test-valid-token',
     ]);
 
     $response->assertStatus(409)

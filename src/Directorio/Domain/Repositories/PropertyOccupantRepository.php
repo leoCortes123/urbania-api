@@ -19,6 +19,17 @@ interface PropertyOccupantRepository
     /** @return PropertyOccupant[] */
     public function findActiveByPropertyAndType(string $propertyId, string $occupantTypeId): array;
 
+    /** @return PropertyOccupant[] */
+    public function findActiveByContact(string $contactId): array;
+
+    public function findActivePortalPrimaryByPropertyId(string $propertyId): ?PropertyOccupant;
+
+    /**
+     * Atomic swap: sets all occupants of the property to is_portal_primary=false
+     * and the given occupantId to is_portal_primary=true, in a single transaction.
+     */
+    public function setPortalPrimary(string $propertyId, string $occupantId): void;
+
     public function save(PropertyOccupant $occupant): PropertyOccupant;
 
     public function update(PropertyOccupant $occupant): PropertyOccupant;
@@ -26,7 +37,4 @@ interface PropertyOccupantRepository
     public function delete(string $id): void;
 
     public function countActiveOwnersByProperty(string $propertyId): int;
-
-    /** @return PropertyOccupant[] */
-    public function findActiveByContact(string $contactId): array;
 }

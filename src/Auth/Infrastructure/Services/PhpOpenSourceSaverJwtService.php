@@ -12,6 +12,7 @@ use Lcobucci\JWT\Token\RegisteredClaims;
 use Lcobucci\JWT\UnencryptedToken;
 use Lcobucci\JWT\Validation\Constraint\SignedWith;
 use Urbania\Auth\Application\Services\JwtServiceInterface;
+use Urbania\Auth\Domain\ValueObjects\ImpersonationSession;
 use Urbania\Auth\Domain\ValueObjects\JwtToken;
 use Urbania\Auth\Domain\ValueObjects\SessionId;
 use Urbania\Shared\Domain\ValueObjects\Uuid;
@@ -103,6 +104,48 @@ final readonly class PhpOpenSourceSaverJwtService implements JwtServiceInterface
         if ($scope !== null && $scope !== '') {
             $builder = $builder->withClaim('scope', $scope);
         }
+
+        $token = $builder->getToken($this->config->signer(), $this->config->signingKey());
+
+        return JwtToken::fromString($token->toString());
+    }
+
+    public function generateImpersonationToken(
+        string $impersonatedUserId,
+        string $role,
+        string $organizationId,
+        string $adminUserId,
+        ImpersonationSession $impersonationSession,
+        string $reason,
+        ?int $ttl = null,
+    ): JwtToken {
+        if ($impersonatedUserId === '' || $adminUserId === '') {
+            throw new \InvalidArgumentException('User IDs cannot be empty');
+        }
+
+        $now = new \DateTimeImmutable;
+        $ttl = $ttl ?? self::DEFAULT_TTL;
+        $expiresAt = $now->modify("+{$ttl} seconds");
+        $jti = Uuid::v7()->toString();
+        assert($jti !== '');
+        $sessionId = SessionId::generate();
+
+        $builder = $this->config->builder()
+            ->identifiedBy($jti)
+            ->relatedTo($impersonatedUserId)
+            ->issuedBy(self::ISSUER)
+            ->permittedFor(...self::AUDIENCE)
+            ->issuedAt($now)
+            ->canOnlyBeUsedAfter($now)
+            ->expiresAt($expiresAt)
+            ->withClaim('role', $role)
+            ->withClaim('mfa_verified', false)
+            ->withClaim('session_id', $sessionId->toString())
+            ->withClaim('device_fp', '')
+            ->withClaim('org_id', $organizationId)
+            ->withClaim('imp', $adminUserId)
+            ->withClaim('imp_session', $impersonationSession->toString())
+            ->withClaim('imp_reason', $reason);
 
         $token = $builder->getToken($this->config->signer(), $this->config->signingKey());
 

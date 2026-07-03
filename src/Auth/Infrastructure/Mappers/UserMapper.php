@@ -42,6 +42,8 @@ final readonly class UserMapper
         $this->setPrivateProperty($user, 'phone', $model->phone);
         $this->setPrivateProperty($user, 'avatarUrl', $model->avatar_url);
         $this->setPrivateProperty($user, 'organizationId', $model->organization_id);
+        $this->setPrivateProperty($user, 'activationCode', $model->activation_code);
+        $this->setPrivateProperty($user, 'activationCodeExpiresAt', $this->toDateTimeImmutable($model->activation_code_expires_at));
         $this->setPrivateProperty($user, 'createdAt', $this->toDateTimeImmutable($model->created_at) ?? throw new \RuntimeException('Expected non-null datetime'));
         $this->setPrivateProperty($user, 'updatedAt', $this->toDateTimeImmutable($model->updated_at) ?? throw new \RuntimeException('Expected non-null datetime'));
         $this->setPrivateProperty($user, 'deletedAt', $this->toDateTimeImmutable($model->deleted_at));
@@ -73,6 +75,8 @@ final readonly class UserMapper
             'must_change_password' => $entity->mustChangePassword(),
             'role' => $entity->role()->value,
             'status' => $entity->status()->value,
+            'activation_code' => $entity->activationCode(),
+            'activation_code_expires_at' => $entity->activationCodeExpiresAt()?->format('Y-m-d H:i:s'),
             'organization_id' => $entity->organizationId(),
             'deleted_at' => $entity->deletedAt()?->format('Y-m-d H:i:s'),
         ];

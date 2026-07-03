@@ -12,6 +12,8 @@ class PropertyOccupant
         private readonly string $contactId,
         private readonly string $occupantTypeId,
         private readonly bool $isPrimary = false,
+        private readonly bool $isLegalOwner = false,
+        private readonly bool $isPortalPrimary = false,
         private readonly ?string $moveInDate = null,
         private readonly ?string $moveOutDate = null,
         private readonly bool $isActive = true,
@@ -47,6 +49,16 @@ class PropertyOccupant
     public function isPrimary(): bool
     {
         return $this->isPrimary;
+    }
+
+    public function isLegalOwner(): bool
+    {
+        return $this->isLegalOwner;
+    }
+
+    public function isPortalPrimary(): bool
+    {
+        return $this->isPortalPrimary;
     }
 
     public function moveInDate(): ?string

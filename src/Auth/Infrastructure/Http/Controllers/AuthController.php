@@ -37,7 +37,10 @@ use Urbania\Auth\Application\UseCases\RevokeAllSessionsUseCase;
 use Urbania\Auth\Application\UseCases\RevokeSessionUseCase;
 use Urbania\Auth\Application\UseCases\UpdateProfileUseCase;
 use Urbania\Auth\Application\UseCases\VerifyEmailUseCase;
+use Urbania\Auth\Application\UseCases\RegistroResidentes\ActivateAccountUseCase;
+use Urbania\Auth\Application\DTOs\ActivateAccountRequestDto;
 use Urbania\Auth\Domain\Exceptions\TokenInvalidException;
+use Urbania\Auth\Infrastructure\Http\Requests\ActivateAccountRequest;
 use Urbania\Auth\Infrastructure\Http\Requests\ChangePasswordRequest;
 use Urbania\Auth\Infrastructure\Http\Requests\ForgotPasswordRequest;
 use Urbania\Auth\Infrastructure\Http\Requests\LoginRequest;
@@ -127,6 +130,8 @@ final class AuthController extends Controller
         $passwordConfirmation = $request->validated('password_confirmation');
         /** @var string|null $phone */
         $phone = $request->validated('phone');
+        /** @var string|null $invitationToken */
+        $invitationToken = $request->validated('invitation_token');
 
         $dto = new RegisterRequestDto(
             name: $name,
@@ -134,6 +139,7 @@ final class AuthController extends Controller
             password: $password,
             passwordConfirmation: $passwordConfirmation,
             phone: $phone,
+            invitationToken: $invitationToken,
         );
 
         $result = $useCase->execute($dto);
@@ -512,6 +518,29 @@ final class AuthController extends Controller
 
         return response()->json([
             'data' => ['message' => $result['message']],
+            'meta' => ['trace_id' => $request->attributes->get('trace_id')],
+        ], 200);
+    }
+
+    public function activate(ActivateAccountRequest $request, ActivateAccountUseCase $useCase): JsonResponse
+    {
+        /** @var string $email */
+        $email = $request->validated('email');
+        /** @var string $activationCode */
+        $activationCode = $request->validated('activation_code');
+
+        $dto = new ActivateAccountRequestDto(
+            email: $email,
+            activationCode: $activationCode,
+        );
+
+        $result = $useCase->execute($dto);
+
+        return response()->json([
+            'data' => [
+                'message' => $result->message,
+                'force_password_change_token' => $result->forcePasswordChangeToken,
+            ],
             'meta' => ['trace_id' => $request->attributes->get('trace_id')],
         ], 200);
     }

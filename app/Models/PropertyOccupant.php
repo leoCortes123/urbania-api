@@ -23,6 +23,8 @@ class PropertyOccupant extends Model
         'contact_id',
         'occupant_type_id',
         'is_primary',
+        'is_legal_owner',
+        'is_portal_primary',
         'move_in_date',
         'move_out_date',
         'is_active',
@@ -30,6 +32,8 @@ class PropertyOccupant extends Model
 
     protected $casts = [
         'is_primary' => 'boolean',
+        'is_legal_owner' => 'boolean',
+        'is_portal_primary' => 'boolean',
         'is_active' => 'boolean',
         'move_in_date' => 'date',
         'move_out_date' => 'date',

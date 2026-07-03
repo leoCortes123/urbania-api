@@ -16,6 +16,8 @@ function createPropertyOccupant(array $overrides = []): PropertyOccupant
         $overrides['contactId'] ?? Uuid::uuid7()->toString(),
         $overrides['occupantTypeId'] ?? Uuid::uuid7()->toString(),
         $overrides['isPrimary'] ?? false,
+        $overrides['isLegalOwner'] ?? false,
+        $overrides['isPortalPrimary'] ?? false,
         $overrides['moveInDate'] ?? null,
         $overrides['moveOutDate'] ?? null,
         $overrides['isActive'] ?? true,
@@ -33,6 +35,8 @@ it('creates a property occupant with default values', function (): void {
         ->and($occupant->contactId())->toBeString()
         ->and($occupant->occupantTypeId())->toBeString()
         ->and($occupant->isPrimary())->toBeFalse()
+        ->and($occupant->isLegalOwner())->toBeFalse()
+        ->and($occupant->isPortalPrimary())->toBeFalse()
         ->and($occupant->moveInDate())->toBeNull()
         ->and($occupant->moveOutDate())->toBeNull()
         ->and($occupant->isActive())->toBeTrue()

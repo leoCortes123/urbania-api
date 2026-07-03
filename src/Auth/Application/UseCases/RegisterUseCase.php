@@ -10,6 +10,7 @@ use Urbania\Auth\Domain\Entities\UserEntity;
 use Urbania\Auth\Domain\Events\UserRegistered;
 use Urbania\Auth\Domain\Exceptions\EmailAlreadyExistsException;
 use Urbania\Auth\Domain\Exceptions\InvalidCredentialsException;
+use Urbania\Auth\Domain\Exceptions\PublicRegistrationDisabledException;
 use Urbania\Auth\Domain\Repositories\UserRepositoryInterface;
 use Urbania\Auth\Domain\ValueObjects\Password;
 use Urbania\Auth\Domain\ValueObjects\UserRole;
@@ -25,6 +26,10 @@ final readonly class RegisterUseCase
 
     public function execute(RegisterRequestDto $request): RegisterResponseDto
     {
+        if ($request->invitationToken === null || $request->invitationToken === '') {
+            throw new PublicRegistrationDisabledException;
+        }
+
         $email = Email::fromString($request->email);
 
         if ($this->userRepository->existsByEmail($email)) {

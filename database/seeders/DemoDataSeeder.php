@@ -173,12 +173,13 @@ class DemoDataSeeder extends Seeder
         );
 
         // ── Property Occupants ──────────────────────────
-
+        // Admin como legal_owner + portal_primary del Apto 101
         if (isset($propertyIds['101'])) {
-            $this->findOrCreateOccupant($propertyIds['101'], $adminContactId, 'propietario', true);
+            $this->findOrCreateOccupant($propertyIds['101'], $adminContactId, 'propietario', true, true, true);
         }
+        // Residente como ocupante simple (sin roles legales/portal)
         if (isset($propertyIds['B101'])) {
-            $this->findOrCreateOccupant($propertyIds['B101'], $residenteContactId, 'residente', true);
+            $this->findOrCreateOccupant($propertyIds['B101'], $residenteContactId, 'residente', true, false, false);
         }
 
         // ── Role Assignments para los usuarios ──────────
@@ -322,23 +323,28 @@ class DemoDataSeeder extends Seeder
             null, '3106666666'
         );
 
-        // ── Occupants ───────────────────────────────────
-
+        // ── Occupants con nueva semántica ────────────────
+        // Escenario 1: Admin como legal_owner + portal_primary del T1-101 (vive ahí)
         if (isset($propSR['T1-101'])) {
-            $this->findOrCreateOccupant($propSR['T1-101'], $cAdmin, 'propietario', true);
-            $this->findOrCreateOccupant($propSR['T1-101'], $cFamiliar, 'familiar', false);
+            $this->findOrCreateOccupant($propSR['T1-101'], $cAdmin, 'propietario', true, true, true);
+            // Familiar como co-residente sin roles especiales
+            $this->findOrCreateOccupant($propSR['T1-101'], $cFamiliar, 'familiar', false, false, false);
         }
+        // Escenario 2: Inquilino como portal_primary pero NO legal_owner (dueño arrienda)
         if (isset($propSR['T1-201'])) {
-            $this->findOrCreateOccupant($propSR['T1-201'], $cInquilino, 'inquilino', true);
+            $this->findOrCreateOccupant($propSR['T1-201'], $cInquilino, 'inquilino', true, false, true);
         }
+        // Escenario 3: Residente como legal_owner + portal_primary del T2-101
         if (isset($propSR['T2-101'])) {
-            $this->findOrCreateOccupant($propSR['T2-101'], $cResidente, 'residente', true);
+            $this->findOrCreateOccupant($propSR['T2-101'], $cResidente, 'residente', true, true, true);
         }
+        // Escenario 4: Empleado doméstico sin ningún rol especial
         if (isset($propSR['T2-201'])) {
-            $this->findOrCreateOccupant($propSR['T2-201'], $cEmpleado, 'empleado_domestico', false);
+            $this->findOrCreateOccupant($propSR['T2-201'], $cEmpleado, 'empleado_domestico', false, false, false);
         }
+        // Escenario 5: Contacto de emergencia (ni siquiera es is_primary)
         if (isset($propSR['T3-101'])) {
-            $this->findOrCreateOccupant($propSR['T3-101'], $cEmergencia, 'contacto_emergencia', false);
+            $this->findOrCreateOccupant($propSR['T3-101'], $cEmergencia, 'contacto_emergencia', false, false, false);
         }
 
         // ── Comunicaciones ──────────────────────────────
@@ -437,7 +443,7 @@ class DemoDataSeeder extends Seeder
             );
         }
 
-        // ── Contactos y occupants ───────────────────────
+        // ── Contactos ───────────────────────────────────
 
         $cGlobal = $this->findOrCreateContact(
             $adminGlobalId, $organizationId,
@@ -455,14 +461,15 @@ class DemoDataSeeder extends Seeder
             'admin@parqueindustrial.com', '3203333333'
         );
 
+        // ── Occupants con nueva semántica ────────────────
         if (isset($propNogal['N-101'])) {
-            $this->findOrCreateOccupant($propNogal['N-101'], $cNogal, 'propietario', true);
+            $this->findOrCreateOccupant($propNogal['N-101'], $cNogal, 'propietario', true, true, true);
         }
         if (isset($propNogal['N-OC-101'])) {
-            $this->findOrCreateOccupant($propNogal['N-OC-101'], $cGlobal, 'propietario', true);
+            $this->findOrCreateOccupant($propNogal['N-OC-101'], $cGlobal, 'propietario', true, true, true);
         }
         if (isset($propParque[0])) {
-            $this->findOrCreateOccupant($propParque[0], $cParque, 'propietario', true);
+            $this->findOrCreateOccupant($propParque[0], $cParque, 'propietario', true, true, true);
         }
 
         // ── Comunicaciones ──────────────────────────────
@@ -532,7 +539,7 @@ class DemoDataSeeder extends Seeder
         );
 
         if (isset($propGT[0])) {
-            $this->findOrCreateOccupant($propGT[0], $cAdmin, 'propietario', true);
+            $this->findOrCreateOccupant($propGT[0], $cAdmin, 'propietario', true, true, true);
         }
 
         // Comunicaciones minimalistas
@@ -806,7 +813,8 @@ class DemoDataSeeder extends Seeder
 
     private function findOrCreateOccupant(
         string $propertyId, string $contactId,
-        string $occupantTypeCode, bool $isPrimary = false
+        string $occupantTypeCode, bool $isPrimary = false,
+        bool $isLegalOwner = false, bool $isPortalPrimary = false
     ): void {
         $occupantTypeId = $this->occupantTypeIds[$occupantTypeCode];
 
@@ -827,6 +835,8 @@ class DemoDataSeeder extends Seeder
             'contact_id' => $contactId,
             'occupant_type_id' => $occupantTypeId,
             'is_primary' => $isPrimary,
+            'is_legal_owner' => $isLegalOwner,
+            'is_portal_primary' => $isPortalPrimary,
             'move_in_date' => '2026-01-01',
             'move_out_date' => null,
             'is_active' => true,

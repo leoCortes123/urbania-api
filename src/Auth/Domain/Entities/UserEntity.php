@@ -57,6 +57,10 @@ final class UserEntity
 
     private ?string $organizationId;
 
+    private ?string $activationCode;
+
+    private ?\DateTimeImmutable $activationCodeExpiresAt;
+
     /** @var list<string> */
     private array $changedFields;
 
@@ -86,6 +90,8 @@ final class UserEntity
         ?string $phone = null,
         ?string $avatarUrl = null,
         ?string $organizationId = null,
+        ?string $activationCode = null,
+        ?\DateTimeImmutable $activationCodeExpiresAt = null,
     ) {
         $this->id = $id;
         $this->email = $email;
@@ -109,6 +115,8 @@ final class UserEntity
         $this->phone = $phone;
         $this->avatarUrl = $avatarUrl;
         $this->organizationId = $organizationId;
+        $this->activationCode = $activationCode;
+        $this->activationCodeExpiresAt = $activationCodeExpiresAt;
         $this->changedFields = [];
     }
 
@@ -401,6 +409,49 @@ final class UserEntity
     public function organizationId(): ?string
     {
         return $this->organizationId;
+    }
+
+    public function activationCode(): ?string
+    {
+        return $this->activationCode;
+    }
+
+    public function activationCodeExpiresAt(): ?\DateTimeImmutable
+    {
+        return $this->activationCodeExpiresAt;
+    }
+
+    public function isActivationCodeExpired(): bool
+    {
+        if ($this->activationCodeExpiresAt === null) {
+            return false;
+        }
+
+        return $this->activationCodeExpiresAt <= new \DateTimeImmutable;
+    }
+
+    public function setPendingActivation(string $activationCode, \DateTimeImmutable $expiresAt): void
+    {
+        $this->activationCode = $activationCode;
+        $this->activationCodeExpiresAt = $expiresAt;
+        $this->status = UserStatus::PENDING_ACTIVATION;
+        $this->mustChangePassword = true;
+        $this->updatedAt = new \DateTimeImmutable;
+    }
+
+    public function completeActivation(): void
+    {
+        $this->activationCode = null;
+        $this->activationCodeExpiresAt = null;
+        $this->status = UserStatus::ACTIVE;
+        $this->updatedAt = new \DateTimeImmutable;
+    }
+
+    public function clearActivationCode(): void
+    {
+        $this->activationCode = null;
+        $this->activationCodeExpiresAt = null;
+        $this->updatedAt = new \DateTimeImmutable;
     }
 
     /**

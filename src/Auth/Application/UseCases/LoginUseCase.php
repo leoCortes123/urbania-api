@@ -13,6 +13,7 @@ use Urbania\Auth\Domain\Entities\UserEntity;
 use Urbania\Auth\Domain\Events\UserLoggedIn;
 use Urbania\Auth\Domain\Exceptions\InvalidCredentialsException;
 use Urbania\Auth\Domain\Exceptions\UserLockedException;
+use Urbania\Auth\Domain\Exceptions\AccountPendingActivationException;
 use Urbania\Auth\Domain\Repositories\RefreshTokenRepositoryInterface;
 use Urbania\Auth\Domain\Repositories\UserRepositoryInterface;
 use Urbania\Auth\Domain\ValueObjects\DeviceFingerprint;
@@ -41,6 +42,10 @@ final readonly class LoginUseCase
 
         if ($user->isLocked()) {
             throw new UserLockedException;
+        }
+
+        if ($user->status() === \Urbania\Auth\Domain\ValueObjects\UserStatus::PENDING_ACTIVATION) {
+            throw new AccountPendingActivationException;
         }
 
         if (! $user->passwordHash()->verify($request->password)) {

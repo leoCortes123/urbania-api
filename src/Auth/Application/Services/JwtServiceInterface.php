@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Urbania\Auth\Application\Services;
 
+use Urbania\Auth\Domain\ValueObjects\ImpersonationSession;
 use Urbania\Auth\Domain\ValueObjects\JwtToken;
 use Urbania\Auth\Domain\ValueObjects\SessionId;
 
@@ -17,6 +18,16 @@ interface JwtServiceInterface
         string $deviceFingerprint,
         ?string $organizationId = null,
         ?string $scope = null,
+        ?int $ttl = null,
+    ): JwtToken;
+
+    public function generateImpersonationToken(
+        string $impersonatedUserId,
+        string $role,
+        string $organizationId,
+        string $adminUserId,
+        ImpersonationSession $impersonationSession,
+        string $reason,
         ?int $ttl = null,
     ): JwtToken;
 

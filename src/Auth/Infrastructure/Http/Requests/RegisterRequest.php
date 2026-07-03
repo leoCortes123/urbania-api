@@ -24,6 +24,7 @@ final class RegisterRequest extends FormRequest
             'password' => ['required', 'string', 'min:8', 'max:128', 'confirmed'],
             'password_confirmation' => ['required', 'string', 'same:password'],
             'phone' => ['nullable', 'string', 'max:20', 'regex:/^[0-9+\-()\s]+$/'],
+            'invitation_token' => ['nullable', 'string', 'max:128'],
         ];
     }
 

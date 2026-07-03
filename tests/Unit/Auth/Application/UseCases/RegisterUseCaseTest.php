@@ -8,6 +8,7 @@ use Urbania\Auth\Domain\Entities\UserEntity;
 use Urbania\Auth\Domain\Events\UserRegistered;
 use Urbania\Auth\Domain\Exceptions\EmailAlreadyExistsException;
 use Urbania\Auth\Domain\Exceptions\InvalidCredentialsException;
+use Urbania\Auth\Domain\Exceptions\PublicRegistrationDisabledException;
 use Urbania\Auth\Domain\Repositories\UserRepositoryInterface;
 use Urbania\Auth\Domain\ValueObjects\UserRole;
 use Urbania\Shared\Application\Bus\EventBusInterface;
@@ -27,12 +28,24 @@ afterEach(function (): void {
     Mockery::close();
 });
 
+it('throws PublicRegistrationDisabledException when no invitation token is provided', function (): void {
+    $request = new RegisterRequestDto(
+        name: 'John Doe',
+        email: 'new@example.com',
+        password: 'SecureP@ss123',
+        passwordConfirmation: 'SecureP@ss123',
+    );
+
+    $this->useCase->execute($request);
+})->throws(PublicRegistrationDisabledException::class);
+
 it('registers a new user successfully', function (): void {
     $request = new RegisterRequestDto(
         name: 'John Doe',
         email: 'new@example.com',
         password: 'SecureP@ss123',
         passwordConfirmation: 'SecureP@ss123',
+        invitationToken: 'test-invitation-token',
     );
 
     $this->userRepository->shouldReceive('existsByEmail')
@@ -62,6 +75,7 @@ it('throws EmailAlreadyExistsException when email is already registered', functi
         email: 'existing@example.com',
         password: 'SecureP@ss123',
         passwordConfirmation: 'SecureP@ss123',
+        invitationToken: 'test-invitation-token',
     );
 
     $this->userRepository->shouldReceive('existsByEmail')
@@ -78,6 +92,7 @@ it('throws InvalidCredentialsException when password confirmation does not match
         email: 'new@example.com',
         password: 'SecureP@ss123',
         passwordConfirmation: 'DifferentP@ss123',
+        invitationToken: 'test-invitation-token',
     );
 
     $this->userRepository->shouldReceive('existsByEmail')
@@ -101,6 +116,7 @@ it('dispatches UserRegistered event', function (): void {
         email: 'new@example.com',
         password: 'SecureP@ss123',
         passwordConfirmation: 'SecureP@ss123',
+        invitationToken: 'test-invitation-token',
     );
 
     $this->userRepository->shouldReceive('existsByEmail')
@@ -130,6 +146,7 @@ it('assigns USER role by default', function (): void {
         email: 'new@example.com',
         password: 'SecureP@ss123',
         passwordConfirmation: 'SecureP@ss123',
+        invitationToken: 'test-invitation-token',
     );
 
     $this->userRepository->shouldReceive('existsByEmail')

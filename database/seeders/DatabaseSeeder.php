@@ -108,6 +108,7 @@ class DatabaseSeeder extends Seeder
             RbacRoleSeeder::class,
             RbacMigrationSeeder::class,
             DemoDataSeeder::class,
+            DevUserSeeder::class,
         ]);
     }
 

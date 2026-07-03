@@ -12,13 +12,17 @@ use Urbania\Auth\Application\Services\MailerServiceInterface;
 use Urbania\Auth\Application\Services\PasswordHistoryServiceInterface;
 use Urbania\Auth\Application\UseCases\ForgotPasswordUseCase;
 use Urbania\Auth\Application\UseCases\ResendVerificationUseCase;
+use Urbania\Auth\Domain\Repositories\InvitationRepository;
 use Urbania\Auth\Domain\Repositories\PasswordResetTokenRepositoryInterface;
 use Urbania\Auth\Domain\Repositories\RefreshTokenRepositoryInterface;
+use Urbania\Auth\Domain\Repositories\SecurityEventRepositoryInterface;
 use Urbania\Auth\Domain\Repositories\UserRepositoryInterface;
 use Urbania\Auth\Infrastructure\Events\IlluminateEventBus;
+use Urbania\Auth\Infrastructure\Persistence\EloquentInvitationRepository;
 use Urbania\Auth\Infrastructure\Persistence\EloquentPasswordHistoryService;
 use Urbania\Auth\Infrastructure\Persistence\EloquentPasswordResetTokenRepository;
 use Urbania\Auth\Infrastructure\Persistence\EloquentRefreshTokenRepository;
+use Urbania\Auth\Infrastructure\Persistence\EloquentSecurityEventRepository;
 use Urbania\Auth\Infrastructure\Persistence\EloquentUserRepository;
 use Urbania\Auth\Infrastructure\Services\JwtTokenDecoder;
 use Urbania\Auth\Infrastructure\Services\LaravelMailerService;
@@ -81,6 +85,16 @@ final class UrbaniaAuthServiceProvider extends ServiceProvider
         $this->app->bind(
             AvatarStorageServiceInterface::class,
             LocalAvatarStorageService::class,
+        );
+
+        $this->app->bind(
+            InvitationRepository::class,
+            EloquentInvitationRepository::class,
+        );
+
+        $this->app->bind(
+            SecurityEventRepositoryInterface::class,
+            EloquentSecurityEventRepository::class,
         );
 
         $frontendUrl = config('app.frontend_url', config('app.url', 'http://localhost'));

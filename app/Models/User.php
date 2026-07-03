@@ -39,6 +39,8 @@ class User extends Authenticatable
         'must_change_password',
         'role',
         'status',
+        'activation_code',
+        'activation_code_expires_at',
         'organization_id',
     ];
 
@@ -60,6 +62,7 @@ class User extends Authenticatable
             'locked_until' => 'datetime',
             'last_login_at' => 'datetime',
             'password_changed_at' => 'datetime',
+            'activation_code_expires_at' => 'datetime',
             'mfa_enabled' => 'boolean',
             'must_change_password' => 'boolean',
             'mfa_backup_codes' => 'array',
