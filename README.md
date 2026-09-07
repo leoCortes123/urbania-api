@@ -1,58 +1,91 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Urbania API
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+API de plataforma para administración de condominios: autenticación, autorización, propiedades,
+directorio y comunicaciones. **Laravel 13 sobre PHP 8.5, con Clean Architecture y DDD en vez del
+MVC estándar del framework.**
 
-## About Laravel
+Construido entre el **19 de junio y el 2 de julio de 2026**.
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+## Las cuatro decisiones que definen el repositorio
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+Están documentadas como ADRs en [`docs/adr/`](docs/adr/), con su contexto y sus consecuencias:
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+1. **[ADR-001] Clean Architecture + DDD sobre MVC estándar.** El código de negocio vive en
+   `src/`, no en `app/`. Cada contexto acotado —`Auth`, `Authorization`, `Tenancy`,
+   `Propiedades`, `Directorio`, `Comunicaciones`— tiene sus propias capas `Domain`,
+   `Application`, `Infrastructure` y `Presentation`. `app/` queda reducido a lo que Laravel
+   exige.
+2. **[ADR-002] RS256 sobre HS256 para firmar los JWT.** Clave asimétrica: quien valida un token
+   no necesita poder emitirlo.
+3. **[ADR-003] UUID v7 sobre IDs autoincrementales.** Ordenables por tiempo, sin filtrar el
+   volumen de la tabla ni obligar a un viaje a la base para conocer el identificador.
+4. **[ADR-004] Doble token con rotación.** Access de vida corta y refresh rotatorio con
+   **detección de reutilización**: si un refresh ya consumido vuelve a aparecer, la familia
+   entera se revoca.
 
-## Learning Laravel
+## Qué hay implementado
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+**Autenticación y seguridad.** Registro, verificación de correo, recuperación y cambio de
+contraseña, perfil. **MFA por TOTP** con activación, desactivación y códigos de respaldo.
+Listado y revocación de sesiones activas, huella de dispositivo, *blacklist* de tokens en Redis.
 
-In addition, [Laracasts](https://laracasts.com) contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+**Autorización.** RBAC con roles, permisos y asignaciones; resolutor de permisos **cacheado en
+Redis** y middleware `can()`.
 
-You can also watch bite-sized lessons with real-world projects on [Laravel Learn](https://laravel.com/learn), where you will be guided through building a Laravel application from scratch while learning PHP fundamentals.
+**Dominio.** Torres, propiedades, unidades, tipos y estados como catálogos, documentos,
+directorio de residentes y comunicaciones. **Impersonación de administrador** con `claims`
+propios en el JWT y registro en `security_events`.
 
-## Agentic Development
+En números: **39 migraciones**, **115 rutas** registradas por módulo, y documentación de la API
+generada con Scribe.
 
-Laravel's predictable structure and conventions make it ideal for AI coding agents like Claude Code, Cursor, and GitHub Copilot. Install [Laravel Boost](https://laravel.com/docs/ai) to supercharge your AI workflow:
+## Verificación
+
+La calidad no es una convención de equipo: **la impone el CI**, y si algo de esto falla el
+*build* se cae.
+
+| | |
+|---|---|
+| **Pruebas** | 132 archivos, **717 casos** con Pest — 96 unitarias, 27 de *feature*, 6 de integración, 2 de seguridad |
+| **Cobertura** | Umbral mínimo forzado en CI (`pest --coverage --min=80`) |
+| **Análisis estático** | **PHPStan nivel 10** sobre `src/` y `app/` — el nivel más estricto que existe |
+| **Estilo** | Laravel Pint en modo `--test` |
+| **Servicios reales en CI** | PostgreSQL 18 y Redis 7 como *services* del *job*: las pruebas de integración corren contra motores de verdad, no contra dobles |
+
+Todo junto en un solo comando: `composer ci` (`lint` + `stan` + `test`).
+
+## Cómo levantarlo
 
 ```bash
-composer require laravel/boost --dev
-
-php artisan boost:install
+cp .env.example .env
+composer install
+composer docker-up          # PostgreSQL + Redis
+composer key-generate
+composer generate-jwt-keys  # el par RS256 no está versionado
+composer migrate
+composer seed
 ```
 
-Boost provides your agent 15+ tools and skills that help agents build Laravel applications while following best practices.
+Y para verificar que todo está en pie: `composer ci`.
 
-## Contributing
+## Estructura
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+```
+src/                        # el negocio, por contexto acotado
+  Auth/                     #   Domain · Application · Infrastructure · Presentation
+  Authorization/
+  Tenancy/
+  Propiedades/
+  Directorio/
+  Comunicaciones/
+  Shared/
+app/                        # solo lo que Laravel exige
+docs/adr/                   # las decisiones y por qué
+tests/                      # Unit · Integration · Feature · Security
+```
 
-## Code of Conduct
+---
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
-
-## Security Vulnerabilities
-
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
-
-## License
-
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+*Parte de la plataforma Urbania, junto a [`urbania-web`](https://github.com/leoCortes123/urbania-web),
+[`urbania-plataforma`](https://github.com/leoCortes123/urbania-plataforma) y
+[`urbania-docs`](https://github.com/leoCortes123/urbania-docs).*
